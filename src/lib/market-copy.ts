@@ -7,9 +7,9 @@
  * surface that shows a number now takes its words from here, so the answer
  * is the same wherever it appears.
  *
- * It parses both the old market names ("Over 0.5 Goals") and the current
- * ones ("Match Goals: Over 0.5"), because rows written before the rename are
- * still in the database.
+ * Names are stored as "<subject> <metric>: <Over|Under> <line>", where the
+ * subject is either "Match" or a club. Older names ("Over 0.5 Goals") are
+ * still in the database and parse here too.
  */
 
 export interface MarketLike {
@@ -29,11 +29,10 @@ export interface EventLike {
   awayTeam: TeamLike;
 }
 
-type Metric = 'goals' | 'corners' | 'cards';
-
 interface Parsed {
-  kind: 'total' | 'result' | 'btts' | 'unknown';
-  metric?: Metric;
+  kind: 'matchTotal' | 'teamTotal' | 'result' | 'btts' | 'unknown';
+  subject?: string;
+  metric?: string;
   direction?: 'over' | 'under';
   line?: number;
   team?: string;
@@ -45,31 +44,31 @@ const team = (t: TeamLike) => t.shortName || t.name;
 function parse(name: string): Parsed {
   const n = name.trim();
 
-  // "Match Goals: Over 2.5" / "Match Corners: Under 9.5"
-  const current = /^Match\s+(Goals|Corners|Cards)\s*:\s*(Over|Under)\s+([\d.]+)/i.exec(n);
-  if (current) {
+  const totals = /^(.+?)\s+(Goals|Corners|Cards)\s*:\s*(Over|Under)\s+([\d.]+)$/i.exec(n);
+  if (totals) {
+    const subject = totals[1].trim();
+    const isMatch = /^match$/i.test(subject);
     return {
-      kind: 'total',
-      metric: current[1].toLowerCase() as Metric,
-      direction: current[2].toLowerCase() as 'over' | 'under',
-      line: Number(current[3]),
+      kind: isMatch ? 'matchTotal' : 'teamTotal',
+      subject: isMatch ? undefined : subject,
+      metric: totals[2].toLowerCase(),
+      direction: totals[3].toLowerCase() as 'over' | 'under',
+      line: Number(totals[4]),
     };
   }
 
-  // Legacy: "Over 2.5 Goals" / "Under 9.5 Corners"
+  // Legacy match totals: "Over 2.5 Goals"
   const legacy = /^(Over|Under)\s+([\d.]+)\s+(Goals|Corners|Cards)/i.exec(n);
   if (legacy) {
     return {
-      kind: 'total',
-      metric: legacy[3].toLowerCase() as Metric,
+      kind: 'matchTotal',
+      metric: legacy[3].toLowerCase(),
       direction: legacy[1].toLowerCase() as 'over' | 'under',
       line: Number(legacy[2]),
     };
   }
 
-  // Both teams to score
-  const btts = /both\s+teams\s+to\s+score/i.test(n);
-  if (btts) {
+  if (/both\s+teams\s+to\s+score/i.test(n)) {
     return { kind: 'btts', outcome: /\b(no|not)\b/i.test(n) ? 'no' : 'yes' };
   }
 
@@ -77,13 +76,9 @@ function parse(name: string): Parsed {
     return { kind: 'result', outcome: 'draw' };
   }
 
-  // "Arsenal to Win"
   const toWin = /^(.+?)\s+to\s+win$/i.exec(n);
-  if (toWin) {
-    return { kind: 'result', team: toWin[1].trim() };
-  }
+  if (toWin) return { kind: 'result', team: toWin[1].trim() };
 
-  // Legacy: "Home Win" / "Away Win"
   const legacyResult = /^(Home|Away)\s+Win$/i.exec(n);
   if (legacyResult) {
     return { kind: 'result', team: legacyResult[1].toLowerCase() === 'home' ? '__home' : '__away' };
@@ -99,13 +94,42 @@ function resolveTeam(token: string | undefined, event?: EventLike): string | und
   return token;
 }
 
-/**
- * The line a user reads first. Says the outcome in full, in ordinary words.
- */
+function teamTotalPhrase(
+  subject: string,
+  metric: string,
+  direction: string,
+  line: number,
+): string {
+  const goals = metric === 'goals';
+
+  if (direction === 'over') {
+    const atLeast = Math.ceil(line);
+    if (goals) {
+      return atLeast === 1
+        ? `${subject} scores at least once`
+        : `${subject} scores ${atLeast} or more`;
+    }
+    return `${subject} takes ${atLeast} or more ${metric}`;
+  }
+
+  const atMost = Math.floor(line);
+  if (goals) {
+    if (atMost === 0) return `${subject} fails to score`;
+    if (atMost === 1) return `${subject} scores at most once`;
+    return `${subject} scores ${atMost} or fewer`;
+  }
+  return `${subject} takes ${atMost} or fewer ${metric}`;
+}
+
+/** The line a user reads first: the outcome in ordinary words. */
 export function marketHeadline(market: MarketLike, event?: EventLike): string {
   const p = parse(market.name);
 
-  if (p.kind === 'total' && p.metric && p.direction && p.line !== undefined) {
+  if (p.kind === 'teamTotal' && p.subject && p.metric && p.direction && p.line !== undefined) {
+    return teamTotalPhrase(p.subject, p.metric, p.direction, p.line);
+  }
+
+  if (p.kind === 'matchTotal' && p.metric && p.direction && p.line !== undefined) {
     const word = p.direction === 'over' ? 'More than' : 'Fewer than';
     return `${word} ${p.line} ${p.metric} in the match`;
   }
@@ -132,7 +156,10 @@ export function marketHeadline(market: MarketLike, event?: EventLike): string {
 export function marketSubject(market: MarketLike, event?: EventLike): string {
   const p = parse(market.name);
 
-  if (p.kind === 'total') {
+  if (p.kind === 'teamTotal' && p.subject) {
+    return `${p.subject} only · full match`;
+  }
+  if (p.kind === 'matchTotal') {
     return 'Both teams combined · full match';
   }
   if (p.kind === 'btts') {
@@ -157,7 +184,11 @@ export function marketSubject(market: MarketLike, event?: EventLike): string {
 export function marketShortLabel(market: MarketLike, event?: EventLike): string {
   const p = parse(market.name);
 
-  if (p.kind === 'total' && p.metric && p.direction && p.line !== undefined) {
+  if (p.kind === 'teamTotal' && p.subject && p.metric && p.direction && p.line !== undefined) {
+    const word = p.direction === 'over' ? 'Over' : 'Under';
+    return `${p.subject} ${p.metric}: ${word} ${p.line}`;
+  }
+  if (p.kind === 'matchTotal' && p.metric && p.direction && p.line !== undefined) {
     const word = p.direction === 'over' ? 'Over' : 'Under';
     return `Match ${p.metric}: ${word} ${p.line}`;
   }
