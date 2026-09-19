@@ -1,10 +1,18 @@
 'use client';
 
 import { cn, formatProbability, getProbabilityTier } from '@/lib/utils';
+import {
+  marketShortLabel,
+  marketSubject,
+  VALUE_BET_SHORT,
+  type EventLike,
+} from '@/lib/market-copy';
 import type { Market } from '@/types';
 
 interface MarketChipProps {
   market: Market;
+  /** The fixture, so home/away markets can name the actual club. */
+  event?: EventLike;
   isSelected?: boolean;
   onClick?: () => void;
   variant?: 'light' | 'dark';
@@ -13,6 +21,7 @@ interface MarketChipProps {
 
 export function MarketChip({
   market,
+  event,
   isSelected,
   onClick,
   variant = 'light',
@@ -20,12 +29,15 @@ export function MarketChip({
 }: MarketChipProps) {
   const tier = getProbabilityTier(market.probability);
   const isDark = variant === 'dark';
+  const label = marketShortLabel(market, event);
+  const subject = marketSubject(market, event);
 
   return (
     <button
       onClick={onClick}
+      aria-label={`${label}. ${subject}. ${formatProbability(market.probability)} chance.`}
       className={cn(
-        'flex items-center gap-3 rounded-oracle-sm border px-4 py-3 text-left transition-all duration-normal',
+        'flex w-full items-center gap-3 rounded-oracle-sm border px-4 py-3 text-left transition-all duration-normal',
         isDark
           ? [
               'border-dark-slate',
@@ -43,7 +55,7 @@ export function MarketChip({
       )}
     >
       {/* Probability bar */}
-      <div className="relative h-8 w-1 overflow-hidden rounded-full bg-warm-sand">
+      <div className="relative h-8 w-1 shrink-0 overflow-hidden rounded-full bg-warm-sand">
         <div
           className={cn('absolute bottom-0 w-full rounded-full transition-all', {
             'bg-prob-high': tier === 'high',
@@ -54,37 +66,42 @@ export function MarketChip({
         />
       </div>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <p className={cn(
-          'truncate text-body-sm font-medium',
-          isDark ? 'text-txt-inverse' : 'text-txt-primary',
-        )}>
-          {market.shortName || market.name}
+      {/* Content — the outcome, then who it is about. The second line is the
+          one that answers "which team?", so it is never dropped. */}
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            'truncate text-body-sm font-medium',
+            isDark ? 'text-txt-inverse' : 'text-txt-primary',
+          )}
+        >
+          {label}
         </p>
-        {market.line && (
-          <p className={cn('text-caption', isDark ? 'text-txt-inverse-2' : 'text-txt-tertiary')}>
-            Line: {market.line}
-          </p>
-        )}
+        <p
+          className={cn(
+            'truncate text-caption',
+            isDark ? 'text-txt-inverse-2' : 'text-txt-tertiary',
+          )}
+        >
+          {subject}
+        </p>
       </div>
 
       {/* Probability */}
-      <span className={cn(
-        'font-mono text-body-sm font-semibold',
-        {
+      <span
+        className={cn('shrink-0 font-mono text-body-sm font-semibold', {
           'text-prob-high': tier === 'high',
           'text-prob-mid': tier === 'mid',
           'text-txt-tertiary': tier === 'low',
-        },
-      )}>
+        })}
+      >
         {formatProbability(market.probability)}
       </span>
 
       {/* Value bet indicator */}
       {market.isValueBet && (
-        <span className="rounded-full bg-value/15 px-2 py-0.5 text-[10px] font-bold text-value">
-          VALUE
+        <span className="shrink-0 rounded-full bg-value/15 px-2 py-0.5 text-[10px] font-bold text-value">
+          {VALUE_BET_SHORT}
         </span>
       )}
     </button>

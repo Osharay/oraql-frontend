@@ -9,6 +9,7 @@ import { PickCard } from '@/components/picks/PickCard';
 import { MarketChip } from '@/components/markets/MarketChip';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { Button } from '@/components/ui/Button';
+import { marketHeadline, marketSubject, evidenceNote } from '@/lib/market-copy';
 import { api } from '@/lib/api';
 import { useBuilderStore } from '@/stores/builder.store';
 import type { EventDetail, Market, MarketCategory } from '@/types';
@@ -215,6 +216,7 @@ export default function EventDetailPage() {
                   >
                     <MarketChip
                       market={market}
+                      event={event}
                       isSelected={selectedMarket?.id === market.id}
                       onClick={() => setSelectedMarket(market)}
                       variant="light"
@@ -237,10 +239,10 @@ export default function EventDetailPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <h3 className="font-display text-heading tracking-tight text-txt-primary">
-                      {selectedMarket.name}
+                      {marketHeadline(selectedMarket, event)}
                     </h3>
                     <p className="mt-1 text-body-sm text-txt-secondary">
-                      {formatCategory(selectedMarket.category)}
+                      {marketSubject(selectedMarket, event)}
                     </p>
                   </div>
                   <div className="flex-shrink-0">
@@ -248,9 +250,22 @@ export default function EventDetailPage() {
                       probability={selectedMarket.probability}
                       isValueBet={selectedMarket.isValueBet}
                       size="lg"
+                      subject={marketHeadline(selectedMarket, event).toLowerCase()}
                     />
                   </div>
                 </div>
+
+                {/* How much history the figure rests on. */}
+                {(() => {
+                  const evidence = evidenceNote(selectedMarket.confidence);
+                  if (!evidence) return null;
+                  return (
+                    <p className="text-caption text-txt-tertiary">
+                      <span className="font-medium">{evidence.label}.</span>{' '}
+                      {evidence.detail}
+                    </p>
+                  );
+                })()}
 
                 {/* Explanation */}
                 {selectedMarket.explanation && (

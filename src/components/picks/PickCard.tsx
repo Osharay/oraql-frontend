@@ -5,34 +5,15 @@ import { Star, ChevronDown, ChevronUp, Plus, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { Button } from '@/components/ui/Button';
+import {
+  marketHeadline,
+  marketSubject,
+  evidenceNote,
+  probabilityPhrase,
+  VALUE_BET_LABEL,
+} from '@/lib/market-copy';
 import { useBuilderStore } from '@/stores/builder.store';
 import type { Pick } from '@/types';
-
-/**
- * Says what the number is about.
- *
- * "Over 0.5 Goals" on its own reads as though it belongs to a team, and users
- * have asked which one. Totals markets cover the whole match; result markets
- * already name their club.
- */
-function subjectLabel(
-  marketName: string,
-  event?: { homeTeam: { name: string; shortName?: string }; awayTeam: { name: string; shortName?: string } },
-): string {
-  if (/^Match (Goals|Corners|Cards):/i.test(marketName)) {
-    return 'Both teams combined, full match';
-  }
-  if (/both teams to score/i.test(marketName)) {
-    return 'Both teams, full match';
-  }
-  if (/to win$/i.test(marketName) || /^draw$/i.test(marketName)) {
-    return 'Match result';
-  }
-  if (event) {
-    return `${event.homeTeam.shortName || event.homeTeam.name} v ${event.awayTeam.shortName || event.awayTeam.name}`;
-  }
-  return 'Full match';
-}
 
 interface PickCardProps {
   pick: Pick;
@@ -51,6 +32,10 @@ export function PickCard({
   const addToBuilder = useBuilderStore((s) => s.add);
   const isDark = variant === 'dark';
 
+  const headline = marketHeadline(pick.market, pick.event);
+  const subject = marketSubject(pick.market, pick.event);
+  const evidence = evidenceNote(pick.market.confidence);
+
   return (
     <div
       className={cn(
@@ -68,64 +53,74 @@ export function PickCard({
           : undefined
       }
     >
-      {/* Header */}
-      <div className="mb-3 flex items-start justify-between">
-        <div className="flex items-center gap-2">
+      {/* Header. The outcome is stated as a sentence, and the line beneath it
+          says who it is about — the question the market name alone left open. */}
+      <div className="mb-3 flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-2">
           {pick.rank === 1 && (
-            <Star className="h-5 w-5 fill-oracle-gold text-oracle-gold" />
+            <Star className="mt-1 h-5 w-5 shrink-0 fill-oracle-gold text-oracle-gold" />
           )}
-          <div>
+          <div className="min-w-0">
             <p className={cn(
               'font-display text-heading tracking-tight',
               isDark ? 'text-txt-inverse' : 'text-txt-primary',
             )}>
-              {pick.market.name}
+              {headline}
             </p>
             <p className={cn(
               'text-caption',
               isDark ? 'text-txt-inverse-2' : 'text-txt-tertiary',
             )}>
-              {subjectLabel(pick.market.name, pick.event)}
+              {subject}
               {pick.market.isValueBet && (
                 <span className="ml-2 inline-flex items-center gap-1 text-value">
-                  <Sparkles className="h-3 w-3" /> Value Bet
+                  <Sparkles className="h-3 w-3" /> {VALUE_BET_LABEL}
                 </span>
               )}
             </p>
           </div>
         </div>
 
-        <ProbabilityBadge
-          probability={pick.probability}
-          isValueBet={pick.market.isValueBet}
-          size="lg"
-        />
+        <div className="shrink-0">
+          <ProbabilityBadge
+            probability={pick.probability}
+            isValueBet={pick.market.isValueBet}
+            size="lg"
+            subject={headline.toLowerCase()}
+          />
+        </div>
       </div>
+
+      {/* What the percentage means in words. */}
+      <p className={cn(
+        'mb-2 text-body-sm',
+        isDark ? 'text-txt-inverse-2' : 'text-txt-secondary',
+      )}>
+        {probabilityPhrase(pick.probability)}.
+      </p>
 
       {/* How much evidence sits behind the number. Without this a figure built
           on league averages looks identical to one built on real form. */}
-      {typeof pick.market.confidence === 'number' && (
+      {evidence && (
         <div
           className={cn(
-            'mb-3 flex items-center gap-2 text-caption',
+            'mb-3 flex items-start gap-2 text-caption',
             isDark ? 'text-txt-inverse-2' : 'text-txt-tertiary',
           )}
         >
           <span
             className={cn(
-              'inline-block h-1.5 w-1.5 rounded-full',
-              pick.market.confidence >= 0.6
+              'mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full',
+              evidence.tone === 'strong'
                 ? 'bg-prob-high'
-                : pick.market.confidence >= 0.45
+                : evidence.tone === 'moderate'
                   ? 'bg-prob-mid'
                   : 'bg-txt-tertiary',
             )}
           />
-          {pick.market.confidence >= 0.6
-            ? 'Backed by recent form'
-            : pick.market.confidence >= 0.45
-              ? 'Limited recent data'
-              : 'Thin evidence — read the reasoning'}
+          <span>
+            <span className="font-medium">{evidence.label}.</span> {evidence.detail}
+          </span>
         </div>
       )}
 
@@ -159,7 +154,7 @@ export function PickCard({
           </>
         ) : (
           <>
-            <ChevronDown className="h-4 w-4" /> Why this pick?
+            <ChevronDown className="h-4 w-4" /> How did we get this number?
           </>
         )}
       </button>

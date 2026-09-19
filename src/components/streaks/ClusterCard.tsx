@@ -1,6 +1,6 @@
 'use client';
 
-import type { Cluster } from '@/types';
+import type { Cluster, ClusterComponent } from '@/types';
 import { cn } from '@/lib/utils';
 
 /**
@@ -12,18 +12,36 @@ import { cn } from '@/lib/utils';
  * that shows four confident rows without that number invites exactly the wrong
  * reading.
  */
+
+/** Who each row is about. Named, so no one has to infer it from position. */
+function componentSubject(c: ClusterComponent): string {
+  const s = c.snapshot;
+  const home = s.event.homeTeam.shortName || s.event.homeTeam.name;
+  const away = s.event.awayTeam.shortName || s.event.awayTeam.name;
+
+  switch (s.streakCandidate.selection) {
+    case 'HOME':
+      return home;
+    case 'AWAY':
+      return away;
+    default:
+      return 'Both teams combined';
+  }
+}
+
 export function ClusterCard({ cluster }: { cluster: Cluster }) {
   const pct = (v: number) => Math.round(v * 100);
+  const n = cluster.componentCount;
 
   return (
     <article className="overflow-hidden rounded-oracle-md border border-warm-stone bg-white shadow-soft">
       <header className="flex items-baseline justify-between gap-4 border-b border-warm-sand bg-warm-cream px-5 py-4">
         <div>
           <p className="font-display text-h5 text-txt-primary">
-            {cluster.componentCount} independent streaks
+            {n} unrelated streaks
           </p>
           <p className="mt-0.5 text-body-sm text-txt-tertiary">
-            Different events, different markets
+            Different matches, different markets
           </p>
         </div>
 
@@ -31,7 +49,9 @@ export function ClusterCard({ cluster }: { cluster: Cluster }) {
           <p className="font-display text-h4 text-txt-primary">
             {pct(cluster.combinedProbability)}%
           </p>
-          <p className="text-caption text-txt-tertiary">all four together</p>
+          <p className="text-caption text-txt-tertiary">
+            chance all {n} land
+          </p>
         </div>
       </header>
 
@@ -39,6 +59,7 @@ export function ClusterCard({ cluster }: { cluster: Cluster }) {
         {cluster.components.map((c) => {
           const s = c.snapshot;
           const result = s.result?.result;
+          const subject = componentSubject(c);
 
           return (
             <li key={c.id} className="flex items-center gap-4 px-5 py-3.5">
@@ -50,6 +71,8 @@ export function ClusterCard({ cluster }: { cluster: Cluster }) {
                 <p className="truncate font-display text-body font-semibold text-txt-primary">
                   {s.streakCandidate.marketDefinition.displayName}
                 </p>
+                {/* The row's subject, stated rather than implied. */}
+                <p className="truncate text-caption text-txt-tertiary">{subject}</p>
               </div>
 
               <div className="shrink-0 text-right">
@@ -57,7 +80,7 @@ export function ClusterCard({ cluster }: { cluster: Cluster }) {
                   {pct(s.hitRate)}%
                 </p>
                 <p className="text-caption text-txt-tertiary">
-                  base {pct(s.baselineRate)}% · n={s.sampleSize}
+                  usually {pct(s.baselineRate)}% · {s.sampleSize} matches
                 </p>
               </div>
 
@@ -83,7 +106,7 @@ export function ClusterCard({ cluster }: { cluster: Cluster }) {
       <footer className="border-t border-warm-sand px-5 py-3">
         <p className="text-caption text-txt-tertiary">
           Combined figure assumes the selections are independent, so treat it as an
-          approximation. Each component is a historical record, not a prediction.
+          approximation. Each row is a record of what has happened, not a forecast.
         </p>
       </footer>
     </article>

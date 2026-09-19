@@ -7,6 +7,7 @@ import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { Button } from '@/components/ui/Button';
 import { useBuilderStore } from '@/stores/builder.store';
 import Link from 'next/link';
+import { marketShortLabel, marketSubject } from '@/lib/market-copy';
 
 export default function BuilderPage() {
   const { selections, count, combinedProbability, load, remove, clear, exportText, isLoading } =
@@ -57,7 +58,7 @@ export default function BuilderPage() {
 
           {/* Description */}
           <p className="text-body text-txt-inverse-2 max-w-2xl mb-8">
-            Your multi-match strategy. Add picks from different events, review the combined probability, and export when ready.
+            Your multi-match strategy. Add picks from different matches, see how likely it is that they all land, and export when ready.
           </p>
 
           {/* Combined Probability and Actions */}
@@ -65,9 +66,14 @@ export default function BuilderPage() {
             <div className="flex flex-col sm:flex-row sm:items-end gap-8">
               {/* Probability Display - Largest Element */}
               <div className="flex-1">
-                <p className="text-caption text-txt-inverse-2 mb-2">Combined Probability</p>
+                <p className="text-caption text-txt-inverse-2 mb-2">
+                  Chance every selection lands
+                </p>
                 <p className="font-mono text-display-sm font-bold text-oracle-gold">
                   {formatProbability(combinedProbability)}
+                </p>
+                <p className="mt-2 text-caption text-txt-inverse-2">
+                  Assumes the selections are independent of one another.
                 </p>
               </div>
 
@@ -120,8 +126,11 @@ export default function BuilderPage() {
                     {s.market.event.awayTeam.shortName || s.market.event.awayTeam.name}
                   </p>
                   <p className="text-body-sm text-txt-secondary mt-1">
-                    {s.market.name}
+                    {marketShortLabel(s.market, s.market.event)}
                     <span className="mx-2 text-warm-stone">·</span>
+                    {marketSubject(s.market, s.market.event)}
+                  </p>
+                  <p className="text-caption text-txt-tertiary mt-0.5">
                     {s.market.event.league.name}
                     <span className="mx-2 text-warm-stone">·</span>
                     {formatKickoff(s.market.event.kickoffAt)}
@@ -132,6 +141,7 @@ export default function BuilderPage() {
                 <ProbabilityBadge
                   probability={s.market.probability}
                   isValueBet={s.market.isValueBet}
+                  subject={marketShortLabel(s.market, s.market.event).toLowerCase()}
                 />
 
                 {/* Remove Button */}

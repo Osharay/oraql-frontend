@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Star, Clock } from 'lucide-react';
 import { cn, formatKickoff } from '@/lib/utils';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
+import { marketShortLabel, marketSubject } from '@/lib/market-copy';
 import type { Event } from '@/types';
 
 interface EventCardProps {
@@ -53,7 +54,7 @@ export function EventCard({ event, className }: EventCardProps) {
       </div>
 
       {/* Teams */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
             <span className={cn(
@@ -85,17 +86,29 @@ export function EventCard({ event, className }: EventCardProps) {
           </div>
         )}
 
-        {/* OraQL_ Pick badge */}
+        {/* OraQL_ Pick badge. The pick names its own subject — a bare
+            "Over 0.5" here read as though it belonged to one of the clubs
+            listed beside it. */}
         {topPick && !isFinished && (
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex max-w-[55%] flex-col items-end gap-1 text-right">
             <div className="flex items-center gap-1 text-oracle-gold">
               <Star className="h-3.5 w-3.5 fill-oracle-gold" />
               <span className="text-caption font-semibold">Top Pick</span>
             </div>
             <span className="text-body-sm text-txt-secondary">
-              {topPick.market.shortName || topPick.market.name}
+              {marketShortLabel(topPick.market, event)}
             </span>
-            <ProbabilityBadge probability={topPick.probability} size="sm" />
+            <span className="text-caption text-txt-tertiary">
+              {marketSubject(topPick.market, event)}
+            </span>
+            <span className="mt-0.5 flex items-center gap-1">
+              <ProbabilityBadge
+                probability={topPick.probability}
+                size="sm"
+                subject={marketShortLabel(topPick.market, event).toLowerCase()}
+              />
+              <span className="text-caption text-txt-tertiary">chance</span>
+            </span>
           </div>
         )}
       </div>

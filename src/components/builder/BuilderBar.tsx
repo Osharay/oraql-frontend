@@ -5,6 +5,7 @@ import { Layers, X, Copy, Trash2, ChevronUp } from 'lucide-react';
 import { cn, formatProbability } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
+import { marketShortLabel, marketSubject } from '@/lib/market-copy';
 import { useBuilderStore } from '@/stores/builder.store';
 
 export function BuilderBar() {
@@ -37,24 +38,35 @@ export function BuilderBar() {
                 key={s.id}
                 className="flex items-center justify-between rounded-oracle-sm bg-dark-graphite px-4 py-3"
               >
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <p className="text-body-sm font-medium text-txt-inverse">
-                    {s.market.event.homeTeam.shortName || s.market.event.homeTeam.name} vs{' '}
-                    {s.market.event.awayTeam.shortName || s.market.event.awayTeam.name}
+                    {marketShortLabel(s.market, s.market.event)}
                   </p>
                   <p className="text-caption text-txt-inverse-2">
-                    {s.market.name}
+                    {s.market.event.homeTeam.shortName || s.market.event.homeTeam.name} v{' '}
+                    {s.market.event.awayTeam.shortName || s.market.event.awayTeam.name}
+                    {' · '}
+                    {marketSubject(s.market, s.market.event)}
                   </p>
                 </div>
-                <ProbabilityBadge probability={s.market.probability} size="sm" />
+                <ProbabilityBadge
+                  probability={s.market.probability}
+                  size="sm"
+                  subject={marketShortLabel(s.market, s.market.event).toLowerCase()}
+                />
                 <button
                   onClick={() => remove(s.market.id)}
+                  aria-label="Remove from builder"
                   className="ml-3 rounded p-1 text-txt-inverse-2 hover:bg-dark-slate hover:text-danger transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
             ))}
+            <p className="pt-1 text-caption text-txt-inverse-2">
+              Combined chance assumes every selection lands, and that they are
+              independent of one another.
+            </p>
           </div>
         </div>
       )}
@@ -69,7 +81,7 @@ export function BuilderBar() {
             <div className="flex h-10 w-10 items-center justify-center rounded-oracle-sm bg-oracle-gold/20">
               <Layers className="h-5 w-5 text-oracle-gold" />
             </div>
-            <div>
+            <div className="text-left">
               <p className="text-body font-display font-semibold">
                 Bet Builder
                 <span className="ml-2 rounded-full bg-oracle-gold/20 px-2 py-0.5 text-caption font-bold text-oracle-gold">
@@ -77,7 +89,8 @@ export function BuilderBar() {
                 </span>
               </p>
               <p className="text-caption text-txt-inverse-2">
-                Combined: {formatProbability(combinedProbability)}
+                {formatProbability(combinedProbability)} chance all{' '}
+                {count === 1 ? 'of it lands' : `${count} land`}
               </p>
             </div>
             <ChevronUp

@@ -218,6 +218,16 @@ export interface StreakCandidate {
   status: StreakStatus;
   survivedGate: boolean;
   marketDefinition: MarketDefinitionSummary;
+  /**
+   * The team or league the record belongs to, resolved by the API. Without it
+   * a card shows a market and never says whose record it is.
+   */
+  entity?: {
+    id: string;
+    type: 'TEAM' | 'LEAGUE' | 'MATCHUP';
+    name: string;
+    shortName?: string | null;
+  } | null;
 }
 
 export interface CandidatesResponse {

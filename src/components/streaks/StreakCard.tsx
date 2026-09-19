@@ -18,6 +18,28 @@ const STATUS_COPY: Record<string, { label: string; className: string }> = {
   FILTERED: { label: 'Not significant', className: 'bg-warm-sand text-txt-tertiary' },
 };
 
+/** Which matches the record covers, in words rather than an enum. */
+function venuePhrase(venue?: string): string {
+  if (venue === 'HOME') return 'home matches only';
+  if (venue === 'AWAY') return 'away matches only';
+  return 'home and away';
+}
+
+/**
+ * An adjusted p-value is the share of discoveries like this one you would
+ * expect to be coincidence. Stating that in words beats printing "0.032"
+ * next to the word "p" for anyone who is not a statistician.
+ */
+function coincidenceCopy(adjusted?: number | null): { value: string; note: string } {
+  if (adjusted == null) return { value: '—', note: 'Not scored in this run.' };
+  const pct = adjusted * 100;
+  const value = pct < 0.1 ? 'under 0.1%' : `${pct.toFixed(1)}%`;
+  return {
+    value,
+    note: `Of patterns flagged like this one, about ${value} are expected to be coincidence.`,
+  };
+}
+
 export function StreakCard({
   candidate,
   suggestive = false,
@@ -28,6 +50,8 @@ export function StreakCard({
   const [open, setOpen] = useState(false);
   const status = STATUS_COPY[candidate.status] ?? STATUS_COPY.ACTIVE;
   const venue = candidate.context?.venue;
+  const subject = candidate.entity?.shortName || candidate.entity?.name;
+  const coincidence = coincidenceCopy(candidate.adjustedPValue);
 
   return (
     <article
@@ -38,13 +62,20 @@ export function StreakCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
+          {/* Whose record this is. A market name on its own gets read as
+              belonging to whichever club is nearest on the page. */}
+          {subject && (
+            <p className="text-caption font-semibold uppercase tracking-wide text-oracle-gold-dark">
+              {subject}
+            </p>
+          )}
           <h3 className="font-display text-h5 text-txt-primary">
             {candidate.marketDefinition.displayName}
           </h3>
           <p className="mt-0.5 text-body-sm text-txt-tertiary">
-            {venue && venue !== 'ALL' ? `${venue.toLowerCase()} matches` : 'all matches'}
+            {venuePhrase(venue)}
             {' · '}
-            {candidate.wins}/{candidate.sampleSize} settled
+            landed {candidate.wins} of {candidate.sampleSize} settled matches
           </p>
         </div>
 
@@ -66,7 +97,7 @@ export function StreakCard({
         <ResultStrip last10={candidate.last10} />
         {candidate.currentStreak > 0 && (
           <span className="text-body-sm text-txt-secondary">
-            {candidate.currentStreak} in a row
+            {candidate.currentStreak} in a row right now
           </span>
         )}
         <button
@@ -83,37 +114,44 @@ export function StreakCard({
       {open && (
         <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-warm-sand pt-4 text-body-sm sm:grid-cols-4">
           <div>
-            <dt className="text-txt-tertiary">Sample</dt>
+            <dt className="text-txt-tertiary">Matches counted</dt>
             <dd className="font-semibold text-txt-primary">{candidate.sampleSize}</dd>
           </div>
           <div>
             <dt className="text-txt-tertiary">Longest run</dt>
-            <dd className="font-semibold text-txt-primary">{candidate.longestStreak}</dd>
-          </div>
-          <div>
-            <dt className="text-txt-tertiary">Lift</dt>
             <dd className="font-semibold text-txt-primary">
-              {candidate.lift >= 0 ? '+' : ''}
-              {Math.round(candidate.lift * 100)} pts
+              {candidate.longestStreak} in a row
             </dd>
           </div>
           <div>
-            <dt className="text-txt-tertiary">Adjusted p</dt>
+            <dt className="text-txt-tertiary">Above the usual rate</dt>
             <dd className="font-semibold text-txt-primary">
-              {candidate.adjustedPValue != null
-                ? candidate.adjustedPValue < 0.001
-                  ? candidate.adjustedPValue.toExponential(1)
-                  : candidate.adjustedPValue.toFixed(3)
-                : '—'}
+              {candidate.lift >= 0 ? '+' : ''}
+              {Math.round(candidate.lift * 100)} points
+            </dd>
+          </div>
+          <div>
+            <dt className="text-txt-tertiary">Could be coincidence</dt>
+            <dd
+              className="font-semibold text-txt-primary"
+              title={
+                candidate.adjustedPValue != null
+                  ? `Adjusted p-value: ${candidate.adjustedPValue}`
+                  : undefined
+              }
+            >
+              {coincidence.value}
             </dd>
           </div>
 
           <p className="col-span-2 text-body-sm text-txt-secondary sm:col-span-4">
             {suggestive
               ? 'This pattern leans the right way but is not distinguishable from its baseline once the number of slices tested is accounted for. Exploratory only.'
-              : `Observed ${Math.round(candidate.hitRate * 100)}% against a baseline of ${Math.round(
+              : `${subject ? `${subject} has landed this` : 'This landed'} in ${Math.round(
+                  candidate.hitRate * 100,
+                )}% of ${candidate.sampleSize} settled matches, against ${Math.round(
                   candidate.baselineRate * 100,
-                )}% over ${candidate.sampleSize} settled results, and the gap survived correction for every slice tested in this run.`}
+                )}% for the market generally. ${coincidence.note} It is a record of what has happened, not a forecast.`}
           </p>
         </dl>
       )}
