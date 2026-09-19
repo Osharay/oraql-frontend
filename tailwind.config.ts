@@ -37,11 +37,22 @@ const config: Config = {
           'gold-dark': '#A88A3A',
           'gold-muted': 'rgba(200,164,78,0.12)',
         },
-        // Semantic — Probabilities
+        // Semantic — Probabilities.
+        // Absolute probability only. Do NOT use these to rank streaks: a 90%
+        // market whose baseline is 80% would render bright green while being
+        // the least interesting thing on screen.
         prob: {
           high: '#2ECC71',
           mid: '#F0AD4E',
           low: '#8A8A94',
+        },
+        // Semantic — Lift over baseline. Signed, so the scale diverges:
+        // below baseline, at baseline, above it. This is what ranking uses.
+        lift: {
+          neg: '#B8AFA0',
+          flat: '#8A8A94',
+          pos: '#2ECC71',
+          strong: '#1FA85C',
         },
         // Category Accents
         cat: {

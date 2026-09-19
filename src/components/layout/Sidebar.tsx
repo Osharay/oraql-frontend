@@ -10,12 +10,16 @@ import {
   LogOut,
   Trophy,
   SlidersHorizontal,
+  Flame,
+  Boxes,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/streaks', label: 'Streaks', icon: Flame },
+  { href: '/clusters', label: 'Clusters', icon: Boxes },
   { href: '/picks', label: 'OraQL_ Picks', icon: Star },
   { href: '/builder', label: 'Bet Builder', icon: Layers },
 ];

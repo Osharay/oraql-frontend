@@ -181,3 +181,88 @@ export interface TokenPair {
   accessToken: string;
   refreshToken: string;
 }
+
+// ─── Streak engine ───
+
+export type StreakStatus =
+  | 'NEW'
+  | 'ACTIVE'
+  | 'STRENGTHENING'
+  | 'WEAKENING'
+  | 'BROKEN'
+  | 'EXPIRED'
+  | 'FILTERED';
+
+export interface MarketDefinitionSummary {
+  marketId: string;
+  displayName: string;
+  shortName?: string;
+}
+
+export interface StreakCandidate {
+  id: string;
+  entityId: string;
+  selection: 'HOME' | 'AWAY' | 'MATCH' | null;
+  context?: { venue?: string } | null;
+  sampleSize: number;
+  wins: number;
+  hitRate: number;
+  baselineRate: number;
+  lift: number;
+  pValue?: number | null;
+  adjustedPValue?: number | null;
+  currentStreak: number;
+  longestStreak: number;
+  last10?: string | null;
+  strengthScore: number;
+  status: StreakStatus;
+  survivedGate: boolean;
+  marketDefinition: MarketDefinitionSummary;
+}
+
+export interface CandidatesResponse {
+  run: { id: string; candidatesTested: number; candidatesSurviving?: number } | null;
+  tier?: string;
+  caveat?: string;
+  candidates: StreakCandidate[];
+}
+
+export interface ClusterComponent {
+  id: string;
+  rank: number;
+  snapshot: {
+    hitRate: number;
+    baselineRate: number;
+    lift: number;
+    sampleSize: number;
+    currentStreak: number;
+    result?: { result: 'WIN' | 'LOSS' | 'VOID' | 'UNKNOWN' } | null;
+    event: {
+      kickoffAt: string;
+      homeTeam: { name: string; shortName?: string };
+      awayTeam: { name: string; shortName?: string };
+      league: { name: string };
+    };
+    streakCandidate: {
+      selection: 'HOME' | 'AWAY' | 'MATCH' | null;
+      entityId: string;
+      marketDefinition: MarketDefinitionSummary;
+    };
+  };
+}
+
+export interface Cluster {
+  id: string;
+  date: string;
+  type: string;
+  componentCount: number;
+  combinedProbability: number;
+  status: StreakStatus;
+  components: ClusterComponent[];
+}
+
+export interface ClustersResponse {
+  date: string;
+  caveat: string;
+  clusters: Cluster[];
+}
