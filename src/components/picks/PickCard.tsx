@@ -2,11 +2,37 @@
 
 import { useState } from 'react';
 import { Star, ChevronDown, ChevronUp, Plus, Sparkles } from 'lucide-react';
-import { cn, formatProbability, formatCategory } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { Button } from '@/components/ui/Button';
 import { useBuilderStore } from '@/stores/builder.store';
 import type { Pick } from '@/types';
+
+/**
+ * Says what the number is about.
+ *
+ * "Over 0.5 Goals" on its own reads as though it belongs to a team, and users
+ * have asked which one. Totals markets cover the whole match; result markets
+ * already name their club.
+ */
+function subjectLabel(
+  marketName: string,
+  event?: { homeTeam: { name: string; shortName?: string }; awayTeam: { name: string; shortName?: string } },
+): string {
+  if (/^Match (Goals|Corners|Cards):/i.test(marketName)) {
+    return 'Both teams combined, full match';
+  }
+  if (/both teams to score/i.test(marketName)) {
+    return 'Both teams, full match';
+  }
+  if (/to win$/i.test(marketName) || /^draw$/i.test(marketName)) {
+    return 'Match result';
+  }
+  if (event) {
+    return `${event.homeTeam.shortName || event.homeTeam.name} v ${event.awayTeam.shortName || event.awayTeam.name}`;
+  }
+  return 'Full match';
+}
 
 interface PickCardProps {
   pick: Pick;
@@ -59,7 +85,7 @@ export function PickCard({
               'text-caption',
               isDark ? 'text-txt-inverse-2' : 'text-txt-tertiary',
             )}>
-              {formatCategory(pick.market.category)}
+              {subjectLabel(pick.market.name, pick.event)}
               {pick.market.isValueBet && (
                 <span className="ml-2 inline-flex items-center gap-1 text-value">
                   <Sparkles className="h-3 w-3" /> Value Bet
@@ -75,6 +101,33 @@ export function PickCard({
           size="lg"
         />
       </div>
+
+      {/* How much evidence sits behind the number. Without this a figure built
+          on league averages looks identical to one built on real form. */}
+      {typeof pick.market.confidence === 'number' && (
+        <div
+          className={cn(
+            'mb-3 flex items-center gap-2 text-caption',
+            isDark ? 'text-txt-inverse-2' : 'text-txt-tertiary',
+          )}
+        >
+          <span
+            className={cn(
+              'inline-block h-1.5 w-1.5 rounded-full',
+              pick.market.confidence >= 0.6
+                ? 'bg-prob-high'
+                : pick.market.confidence >= 0.45
+                  ? 'bg-prob-mid'
+                  : 'bg-txt-tertiary',
+            )}
+          />
+          {pick.market.confidence >= 0.6
+            ? 'Backed by recent form'
+            : pick.market.confidence >= 0.45
+              ? 'Limited recent data'
+              : 'Thin evidence — read the reasoning'}
+        </div>
+      )}
 
       {/* Event info (when showing across events) */}
       {showEvent && pick.event && (
