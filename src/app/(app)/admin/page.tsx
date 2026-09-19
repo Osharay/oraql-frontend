@@ -71,10 +71,16 @@ export default function AdminPage() {
   async function runPipeline() {
     setRunning('pipeline');
     const steps: Array<[string, () => Promise<unknown>]> = [
+      // The registry has to be in the database before anything can be
+      // derived against it, and clusters have to be built from snapshots or
+      // the Clusters page has nothing to show however well the engine ran.
+      ['Sync market registry', () => api.post('/streaks/registry/sync')],
       ['Derive observations', () => api.post('/streaks/observations/derive')],
       ['Compute baselines', () => api.post('/streaks/baselines/compute')],
       ['Run engine', () => api.post('/streaks/engine/run')],
       ['Capture snapshots', () => api.post('/streaks/snapshots/capture')],
+      ['Build clusters', () => api.post('/streaks/clusters/build', {})],
+      ['Compute team profiles', () => api.post('/streaks/profiles/compute')],
     ];
 
     for (const [label, fn] of steps) {
@@ -244,12 +250,24 @@ export default function AdminPage() {
             size="sm"
             disabled={busy}
             onClick={() =>
+              run('registry', 'Sync market registry', () =>
+                api.post('/streaks/registry/sync'),
+              )
+            }
+          >
+            1. Sync market registry
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy}
+            onClick={() =>
               run('derive', 'Derive observations', () =>
                 api.post('/streaks/observations/derive'),
               )
             }
           >
-            1. Derive observations
+            2. Derive observations
           </Button>
           <Button
             variant="secondary"
@@ -261,7 +279,7 @@ export default function AdminPage() {
               )
             }
           >
-            2. Compute baselines
+            3. Compute baselines
           </Button>
           <Button
             variant="secondary"
@@ -271,7 +289,7 @@ export default function AdminPage() {
               run('engine', 'Run engine', () => api.post('/streaks/engine/run'))
             }
           >
-            3. Run engine
+            4. Run engine
           </Button>
           <Button
             variant="secondary"
@@ -283,7 +301,31 @@ export default function AdminPage() {
               )
             }
           >
-            4. Capture snapshots
+            5. Capture snapshots
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy}
+            onClick={() =>
+              run('clusters', 'Build clusters', () =>
+                api.post('/streaks/clusters/build', {}),
+              )
+            }
+          >
+            6. Build clusters
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy}
+            onClick={() =>
+              run('profiles', 'Compute team profiles', () =>
+                api.post('/streaks/profiles/compute'),
+              )
+            }
+          >
+            7. Compute team profiles
           </Button>
         </div>
 
