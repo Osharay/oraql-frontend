@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut,
   Trophy,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
@@ -17,6 +18,11 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/picks', label: 'OraQL_ Picks', icon: Star },
   { href: '/builder', label: 'Bet Builder', icon: Layers },
+];
+
+/** Shown only to admins — these controls spend API quota. */
+const adminNavItems = [
+  { href: '/admin', label: 'Engine controls', icon: SlidersHorizontal },
 ];
 
 export function Sidebar() {
@@ -37,7 +43,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {navItems.map((item) => {
+        {[...navItems, ...(user?.role === 'ADMIN' ? adminNavItems : [])].map((item) => {
           const isActive = pathname?.startsWith(item.href);
           const Icon = item.icon;
 
