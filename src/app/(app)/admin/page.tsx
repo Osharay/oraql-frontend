@@ -5,6 +5,7 @@ import { Play, Database, Activity, AlertTriangle, Loader2 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { cn } from '@/lib/utils';
 
 /** Leagues the odds job already tracks, as API-Football ids. */
@@ -32,6 +33,7 @@ export default function AdminPage() {
   const [log, setLog] = useState<LogEntry[]>([]);
   const [leagues, setLeagues] = useState<string[]>(DEFAULT_LEAGUES.map((l) => l.id));
   const [seasons, setSeasons] = useState<number[]>(DEFAULT_SEASONS);
+  const [confirmBackfill, setConfirmBackfill] = useState(false);
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -149,8 +151,8 @@ export default function AdminPage() {
 
         <p className="mb-4 text-body-sm text-txt-secondary">
           One request per league-season. Scores only, which settles about twenty of the
-          twenty-seven markets. The statistical gate needs roughly four seasons of history
-          before it can distinguish anything.
+          twenty-seven markets. Candidate testing looks back two seasons; deeper history
+          still sharpens the baselines everything is measured against.
         </p>
 
         <div className="mb-4">
@@ -213,17 +215,7 @@ export default function AdminPage() {
           <Button
             variant="gold"
             disabled={busy || backfillCost === 0}
-            onClick={() => {
-              if (
-                !window.confirm(
-                  `Backfill ${leagues.length} leagues x ${seasons.length} seasons.\n\nThis uses ${backfillCost} API-Football requests of your 7,500 daily allowance.\n\nContinue?`,
-                )
-              )
-                return;
-              run('backfill', 'History backfill', () =>
-                api.post('/ingest/backfill', { leagues, seasons }),
-              );
-            }}
+            onClick={() => setConfirmBackfill(true)}
           >
             {running === 'backfill' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             Backfill history
@@ -332,6 +324,26 @@ export default function AdminPage() {
           </div>
         )}
       </section>
+
+      <ConfirmDialog
+        open={confirmBackfill}
+        title="Run history backfill?"
+        description="This spends API-Football requests against today's allowance."
+        details={[
+          `${leagues.length} league${leagues.length === 1 ? '' : 's'} x ${seasons.length} season${seasons.length === 1 ? '' : 's'}`,
+          `${backfillCost} of 7,500 requests today`,
+          'Scores only — corner and card markets need a separate, larger backfill.',
+        ]}
+        confirmLabel="Run backfill"
+        variant="gold"
+        onCancel={() => setConfirmBackfill(false)}
+        onConfirm={() => {
+          setConfirmBackfill(false);
+          run('backfill', 'History backfill', () =>
+            api.post('/ingest/backfill', { leagues, seasons }),
+          );
+        }}
+      />
     </div>
   );
 }
