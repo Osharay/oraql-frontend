@@ -28,7 +28,7 @@ export function BuilderBar() {
   };
 
   return (
-    <div className="fixed bottom-0 left-64 right-0 z-50 animate-slide-up">
+    <div className="fixed bottom-0 left-0 right-0 z-30 animate-slide-up lg:left-64">
       {/* Expanded panel */}
       {expanded && (
         <div className="border-t border-dark-slate bg-dark-charcoal p-4">
@@ -73,7 +73,7 @@ export function BuilderBar() {
 
       {/* Bottom bar */}
       <div className="border-t border-dark-slate bg-dark-ink px-6 py-3">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
           <button
             onClick={() => setExpanded(!expanded)}
             className="flex items-center gap-3 text-txt-inverse"

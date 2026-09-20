@@ -74,7 +74,7 @@ export default function DashboardPage() {
                 <Star className="h-6 w-6 fill-oracle-gold text-oracle-gold" />
               </div>
               <div>
-                <h2 className="font-display text-display-lg tracking-tight text-txt-inverse mb-2">
+                <h2 className="font-display text-display-md md:text-display-lg tracking-tight text-txt-inverse mb-2">
                   Top Picks Today
                 </h2>
                 <p className="text-body-sm text-txt-inverse-2 max-w-lg">

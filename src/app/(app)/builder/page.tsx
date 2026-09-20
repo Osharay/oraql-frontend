@@ -32,7 +32,7 @@ export default function BuilderPage() {
   return (
     <div className="space-y-0">
       {/* Header Section - Dark Surface with Confidence Display */}
-      <div className="relative overflow-hidden bg-dark-ink px-8 py-12">
+      <div className="relative overflow-hidden bg-dark-ink px-6 py-10 md:px-8 md:py-12">
         {/* Decorative background letter */}
         <div className="absolute inset-0 flex items-start justify-end overflow-hidden">
           <span className="text-white/[0.04] font-display text-[300px] leading-none -right-12 -top-20 absolute">
@@ -99,7 +99,7 @@ export default function BuilderPage() {
 
       {/* Selections Section - Warm Light Surface */}
       {isLoading ? (
-        <div className="bg-warm-white px-8 py-8">
+        <div className="bg-warm-white px-6 py-8 md:px-8">
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-24 animate-pulse rounded-oracle-md bg-warm-cream/40" />
@@ -107,7 +107,7 @@ export default function BuilderPage() {
           </div>
         </div>
       ) : count > 0 ? (
-        <div className="bg-warm-white px-8 py-8">
+        <div className="bg-warm-white px-6 py-8 md:px-8">
           <div className="space-y-3">
             {selections.map((s, idx) => (
               <div
@@ -157,7 +157,7 @@ export default function BuilderPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-warm-white px-8 py-12">
+        <div className="bg-warm-white px-6 py-12 md:px-8">
           <div className="flex flex-col items-center justify-center rounded-oracle-lg border-2 border-dashed border-warm-stone py-16 text-center">
             <Sparkles className="mb-6 h-12 w-12 text-warm-taupe" />
             <h3 className="font-display text-display-sm tracking-tight text-txt-primary mb-3">

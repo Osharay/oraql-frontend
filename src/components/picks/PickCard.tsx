@@ -62,7 +62,7 @@ export function PickCard({
           )}
           <div className="min-w-0">
             <p className={cn(
-              'font-display text-heading tracking-tight',
+              'font-display text-subhead leading-snug tracking-tight sm:text-heading',
               isDark ? 'text-txt-inverse' : 'text-txt-primary',
             )}>
               {headline}
@@ -72,12 +72,13 @@ export function PickCard({
               isDark ? 'text-txt-inverse-2' : 'text-txt-tertiary',
             )}>
               {subject}
-              {pick.market.isValueBet && (
-                <span className="ml-2 inline-flex items-center gap-1 text-value">
-                  <Sparkles className="h-3 w-3" /> {VALUE_BET_LABEL}
-                </span>
-              )}
             </p>
+            {pick.market.isValueBet && (
+              <span className="mt-1.5 inline-flex max-w-full items-center gap-1 rounded-oracle-full bg-value/10 px-2 py-0.5 text-caption text-value">
+                <Sparkles className="h-3 w-3 shrink-0" />
+                <span className="truncate">{VALUE_BET_LABEL}</span>
+              </span>
+            )}
           </div>
         </div>
 

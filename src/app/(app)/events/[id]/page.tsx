@@ -77,9 +77,13 @@ export default function EventDetailPage() {
       </div>
 
       {/* ─── Event Header (Warm Cream Surface with Decorative V) ─── */}
-      <section className="relative overflow-hidden bg-warm-cream px-6 py-8">
-        {/* Decorative "V" letter */}
-        <div className="absolute -right-8 -top-20 text-warm-sand opacity-100" style={{ fontSize: '200px', fontWeight: 'bold', lineHeight: 1 }}>
+      <section className="relative overflow-hidden bg-warm-cream px-6 py-8 md:px-8">
+        {/* Decorative "V". Sized with the viewport — a fixed 200px glyph
+            dwarfed a phone screen. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-8 -top-20 select-none font-display text-[120px] font-bold leading-none text-warm-sand md:text-[200px]"
+        >
           V
         </div>
 
@@ -96,13 +100,13 @@ export default function EventDetailPage() {
           </div>
 
           {/* Teams and Score/Time */}
-          <div className="flex items-center justify-between gap-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
             <div className="flex-1">
-              <h1 className="font-display text-display-lg tracking-tight text-txt-primary">
+              <h1 className="font-display text-display-md md:text-display-lg tracking-tight text-txt-primary break-words">
                 {event.homeTeam.name}
               </h1>
               <p className="my-3 text-body text-txt-tertiary">vs</p>
-              <h1 className="font-display text-display-lg tracking-tight text-txt-primary">
+              <h1 className="font-display text-display-md md:text-display-lg tracking-tight text-txt-primary break-words">
                 {event.awayTeam.name}
               </h1>
             </div>

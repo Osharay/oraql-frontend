@@ -22,6 +22,15 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html,
+  body {
+    /* A single over-wide element used to make the entire page pan sideways
+       on a phone. The layout is fixed above; this keeps one future mistake
+       from doing it again. */
+    @apply overflow-x-hidden;
+    max-width: 100%;
+  }
+
   body {
     @apply font-body bg-warm-white text-txt-primary;
   }
