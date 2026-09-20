@@ -28,20 +28,14 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (email, password) => {
     const tokens = await api.post<TokenPair>('/auth/login', { email, password });
-    api.setToken(tokens.accessToken);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('oracle_refresh', tokens.refreshToken);
-    }
+    api.setTokens(tokens);
     const user = await api.get<User>('/users/me');
     set({ user, isAuthenticated: true });
   },
 
   register: async (data) => {
     const tokens = await api.post<TokenPair>('/auth/register', data);
-    api.setToken(tokens.accessToken);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('oracle_refresh', tokens.refreshToken);
-    }
+    api.setTokens(tokens);
     const user = await api.get<User>('/users/me');
     set({ user, isAuthenticated: true });
   },
@@ -52,17 +46,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       // ignore
     }
-    api.setToken(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('oracle_refresh');
-    }
+    api.clearTokens();
     set({ user: null, isAuthenticated: false });
   },
 
   loadUser: async () => {
     try {
-      const token = api.getToken();
-      if (!token) {
+      // A missing access token is not a missing session: after a reload the
+      // access token may have expired while the 30-day refresh token is still
+      // good. Let the request run so the client can renew.
+      if (!api.getToken() && !api.getRefreshToken()) {
         set({ isLoading: false });
         return;
       }
@@ -74,9 +67,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   setTokens: (tokens) => {
-    api.setToken(tokens.accessToken);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('oracle_refresh', tokens.refreshToken);
-    }
+    api.setTokens(tokens);
   },
 }));
