@@ -228,6 +228,9 @@ export interface StreakCandidate {
     name: string;
     shortName?: string | null;
   } | null;
+  /** The market named for the club it applies to. */
+  marketLabel?: string;
+  subject?: MarketSubject;
 }
 
 export interface CandidatesResponse {
@@ -237,10 +240,24 @@ export interface CandidatesResponse {
   candidates: StreakCandidate[];
 }
 
+/**
+ * Who a figure covers. Decided by the API from the market definition, because
+ * a candidate's `selection` is null for venue-agnostic slices and so cannot
+ * say whether a market is about one club or the match total.
+ */
+export interface MarketSubject {
+  scope: 'TEAM' | 'MATCH';
+  team: string | null;
+  label: string;
+}
+
 export interface ClusterComponent {
   id: string;
   rank: number;
   snapshot: {
+    /** The market named for the club it applies to. */
+    marketLabel?: string;
+    subject?: MarketSubject;
     hitRate: number;
     baselineRate: number;
     lift: number;

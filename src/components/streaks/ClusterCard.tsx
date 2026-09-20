@@ -13,20 +13,25 @@ import { cn } from '@/lib/utils';
  * reading.
  */
 
-/** Who each row is about. Named, so no one has to infer it from position. */
+/**
+ * Who each row is about.
+ *
+ * This used to read the candidate's `selection`, which is null for
+ * venue-agnostic slices — so every one of those fell through to "Both teams
+ * combined", including Draw No Bet and Team To Win, which cover exactly one
+ * club. A client caught it: "Only 1 team can be selected for the draw no bet
+ * market... Which one is it?"
+ *
+ * The API now decides from the market definition and sends the answer.
+ */
 function componentSubject(c: ClusterComponent): string {
-  const s = c.snapshot;
-  const home = s.event.homeTeam.shortName || s.event.homeTeam.name;
-  const away = s.event.awayTeam.shortName || s.event.awayTeam.name;
+  if (c.snapshot.subject?.label) return c.snapshot.subject.label;
 
-  switch (s.streakCandidate.selection) {
-    case 'HOME':
-      return home;
-    case 'AWAY':
-      return away;
-    default:
-      return 'Both teams combined';
-  }
+  // Older payloads: say nothing rather than assert the wrong thing.
+  const sel = c.snapshot.streakCandidate.selection;
+  if (sel === 'HOME') return c.snapshot.event.homeTeam.shortName || c.snapshot.event.homeTeam.name;
+  if (sel === 'AWAY') return c.snapshot.event.awayTeam.shortName || c.snapshot.event.awayTeam.name;
+  return 'Subject not recorded';
 }
 
 export function ClusterCard({ cluster }: { cluster: Cluster }) {
@@ -69,7 +74,7 @@ export function ClusterCard({ cluster }: { cluster: Cluster }) {
                   <span className="text-txt-tertiary"> · {s.event.league.name}</span>
                 </p>
                 <p className="truncate font-display text-body font-semibold text-txt-primary">
-                  {s.streakCandidate.marketDefinition.displayName}
+                  {s.marketLabel || s.streakCandidate.marketDefinition.displayName}
                 </p>
                 {/* The row's subject, stated rather than implied. */}
                 <p className="truncate text-caption text-txt-tertiary">{subject}</p>

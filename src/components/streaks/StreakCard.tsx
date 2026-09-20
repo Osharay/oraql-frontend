@@ -62,16 +62,21 @@ export function StreakCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          {/* Whose record this is. A market name on its own gets read as
-              belonging to whichever club is nearest on the page. */}
-          {subject && (
+          {/* The eyebrow only earns its place when the heading does not
+              already name the club — otherwise it reads twice. */}
+          {subject && !candidate.marketLabel && (
             <p className="text-caption font-semibold uppercase tracking-wide text-oracle-gold-dark">
               {subject}
             </p>
           )}
           <h3 className="font-display text-h5 text-txt-primary">
-            {candidate.marketDefinition.displayName}
+            {candidate.marketLabel || candidate.marketDefinition.displayName}
           </h3>
+          {candidate.subject?.label && (
+            <p className="mt-0.5 text-body-sm text-txt-secondary">
+              {candidate.subject.label}
+            </p>
+          )}
           <p className="mt-0.5 text-body-sm text-txt-tertiary">
             {venuePhrase(venue)}
             {' · '}
