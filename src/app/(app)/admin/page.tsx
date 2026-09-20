@@ -146,6 +146,27 @@ export default function AdminPage() {
             Next 7 days, then team stats, then probabilities. ~450 requests.
           </span>
         </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <Button
+            variant="secondary"
+            onClick={() =>
+              run('teamstats', 'Team history sync', () => api.post('/ingest/stats'))
+            }
+            disabled={busy}
+          >
+            {running === 'teamstats' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+            Sync team history
+          </Button>
+          <span className="text-body-sm text-txt-tertiary">
+            Per-match records for teams playing soon. This is what the picks
+            read; without it no markets are published. 40 teams a run.
+          </span>
+        </div>
       </section>
 
       {/* ─── Backfill ─── */}
@@ -157,8 +178,9 @@ export default function AdminPage() {
 
         <p className="mb-4 text-body-sm text-txt-secondary">
           One request per league-season. Scores only, which settles about twenty of the
-          twenty-seven markets. Candidate testing looks back two seasons; deeper history
-          still sharpens the baselines everything is measured against.
+          twenty-seven markets. Runs in the background — the reply is a job id, not the
+          result. Candidate testing looks back two seasons; deeper history still sharpens
+          the baselines everything is measured against.
         </p>
 
         <div className="mb-4">
