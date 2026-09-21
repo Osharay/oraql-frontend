@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Play, Database, Activity, AlertTriangle, Loader2 } from 'lucide-react';
+import { Play, Database, Activity, AlertTriangle, Loader2, CheckCircle2, XCircle, X } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import { Button } from '@/components/ui/Button';
@@ -35,6 +35,16 @@ export default function AdminPage() {
   const [leagues, setLeagues] = useState<string[]>(DEFAULT_LEAGUES.map((l) => l.id));
   const [seasons, setSeasons] = useState<number[]>(DEFAULT_SEASONS);
   const [confirmBackfill, setConfirmBackfill] = useState(false);
+  /**
+   * What the last button did, shown pinned to the screen. Results used to go
+   * only to the Output panel at the foot of the page — below the fold from
+   * every button — so a press looked like it did nothing.
+   */
+  const [status, setStatus] = useState<{
+    label: string;
+    state: 'running' | 'ok' | 'error';
+    detail?: string;
+  } | null>(null);
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -50,19 +60,37 @@ export default function AdminPage() {
     ]);
   }
 
+  /** One line for the status banner; the full result stays in Output. */
+  function summarise(result: unknown): string {
+    if (result == null) return 'Done.';
+    if (typeof result === 'string') return result;
+    const text = JSON.stringify(result);
+    return text.length > 140 ? `${text.slice(0, 140)}…` : text;
+  }
+
+  function describeError(error: unknown): string {
+    if (error instanceof ApiError) {
+      // A bare 500 tells the reader nothing. The usual cause right now is the
+      // database volume being full; the Railway log has the real message.
+      if (error.status >= 500) {
+        return `${error.status}: server error. Check the Railway deploy log — a full database volume shows up as "No space left on device".`;
+      }
+      return `${error.status}: ${error.message}`;
+    }
+    return error instanceof Error ? error.message : 'Unknown error';
+  }
+
   async function run(key: string, label: string, fn: () => Promise<unknown>) {
     setRunning(key);
+    setStatus({ label, state: 'running' });
     try {
       const result = await fn();
       append(label, true, result);
+      setStatus({ label, state: 'ok', detail: summarise(result) });
     } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? `${error.status}: ${error.message}`
-          : error instanceof Error
-            ? error.message
-            : 'Unknown error';
+      const message = describeError(error);
       append(label, false, message);
+      setStatus({ label, state: 'error', detail: message });
     } finally {
       setRunning(null);
     }
@@ -84,16 +112,22 @@ export default function AdminPage() {
       ['Compute team profiles', () => api.post('/streaks/profiles/compute')],
     ];
 
-    for (const [label, fn] of steps) {
+    let failed = false;
+    for (const [i, [label, fn]] of steps.entries()) {
+      setStatus({ label: `Pipeline ${i + 1}/${steps.length}: ${label}`, state: 'running' });
       try {
         append(label, true, await fn());
       } catch (error) {
-        const message =
-          error instanceof ApiError ? `${error.status}: ${error.message}` : String(error);
+        const message = describeError(error);
         append(label, false, message);
         append('Pipeline halted', false, `Stopped after "${label}" failed.`);
+        setStatus({ label: `Pipeline stopped at ${label}`, state: 'error', detail: message });
+        failed = true;
         break;
       }
+    }
+    if (!failed) {
+      setStatus({ label: 'Pipeline', state: 'ok', detail: `All ${steps.length} steps finished.` });
     }
     setRunning(null);
   }
@@ -118,6 +152,53 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
+      {status && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={cn(
+            'fixed left-4 right-4 top-16 z-40 mx-auto flex max-w-xl items-start gap-3 rounded-oracle-md border px-4 py-3 shadow-card lg:left-[calc(16rem+1rem)] lg:top-4',
+            status.state === 'running' && 'border-warm-stone bg-white',
+            status.state === 'ok' && 'border-lift-pos/40 bg-white',
+            status.state === 'error' && 'border-danger/40 bg-white',
+          )}
+        >
+          {status.state === 'running' && (
+            <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-txt-tertiary" />
+          )}
+          {status.state === 'ok' && <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-lift-strong" />}
+          {status.state === 'error' && <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />}
+          <div className="min-w-0 flex-1">
+            <p className="text-body-sm font-semibold text-txt-primary">
+              {status.label}
+              {status.state === 'running' && ' — running…'}
+            </p>
+            {status.detail && (
+              <p className="mt-0.5 break-words text-caption text-txt-secondary">{status.detail}</p>
+            )}
+            {status.state !== 'running' && (
+              <button
+                onClick={() =>
+                  document.getElementById('engine-output')?.scrollIntoView({ behavior: 'smooth' })
+                }
+                className="mt-1 text-caption font-semibold text-oracle-gold-dark hover:underline"
+              >
+                Full output ↓
+              </button>
+            )}
+          </div>
+          {status.state !== 'running' && (
+            <button
+              onClick={() => setStatus(null)}
+              aria-label="Dismiss"
+              className="shrink-0 rounded p-0.5 text-txt-tertiary hover:text-txt-primary"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      )}
+
       <header className="mb-8">
         <h1 className="font-display text-h2 text-txt-primary">Engine controls</h1>
         <p className="mt-1 text-body text-txt-secondary">
@@ -363,7 +444,7 @@ export default function AdminPage() {
       </section>
 
       {/* ─── Output ─── */}
-      <section className="rounded-oracle-md border border-warm-stone bg-dark-ink p-6">
+      <section id="engine-output" className="rounded-oracle-md border border-warm-stone bg-dark-ink p-6">
         <h2 className="mb-4 font-display text-h4 text-txt-inverse">Output</h2>
 
         {log.length === 0 ? (
