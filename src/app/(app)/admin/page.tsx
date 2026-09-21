@@ -6,6 +6,7 @@ import { api, ApiError } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { OddsSwitch } from '@/components/admin/OddsSwitch';
 import { cn } from '@/lib/utils';
 
 /** Leagues the odds job already tracks, as API-Football ids. */
@@ -166,6 +167,10 @@ export default function AdminPage() {
             Per-match records for teams playing soon. This is what the picks
             read; without it no markets are published. 40 teams a run.
           </span>
+        </div>
+
+        <div className="mt-5">
+          <OddsSwitch onResult={append} />
         </div>
       </section>
 
