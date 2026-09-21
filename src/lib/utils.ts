@@ -1,6 +1,41 @@
 import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
 import { format, formatDistanceToNow, isToday, isTomorrow } from 'date-fns';
+
+/**
+ * tailwind-merge only knows Tailwind's built-in sizes. Told nothing, it reads
+ * `text-caption` as a colour, and when a real colour such as `text-value`
+ * follows it in the same cn() call it keeps the last one — silently dropping
+ * the size. Chips and badges were rendering at body size for that reason.
+ * Keep this list in step with fontSize in tailwind.config.ts.
+ */
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      'font-size': [
+        {
+          text: [
+            'display-xl',
+            'display-lg',
+            'display-md',
+            'display-sm',
+            'heading',
+            'subhead',
+            'body-lg',
+            'body',
+            'body-sm',
+            'caption',
+            'mono-sm',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+          ],
+        },
+      ],
+    },
+  },
+});
 
 /** Merge Tailwind classes safely */
 export function cn(...inputs: ClassValue[]) {

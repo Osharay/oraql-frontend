@@ -293,3 +293,44 @@ export interface ClustersResponse {
   caveat: string;
   clusters: Cluster[];
 }
+
+// ─── Team market form ───
+
+export interface TeamMarketForm {
+  marketId: string;
+  marketLabel: string;
+  scope: 'TEAM' | 'MATCH';
+  subject: string;
+  category: string;
+  /** Newest first, e.g. "WWLWW". */
+  recent: string;
+  recentWins: number;
+  recentPlayed: number;
+  recentRate: number;
+  currentRun: number;
+  longWins: number;
+  longPlayed: number;
+  longRate: number;
+  baselineRate: number | null;
+  lift: number | null;
+  chance: number | null;
+  chanceBand: 'rare' | 'unusual' | 'common' | null;
+}
+
+export interface TeamFormResponse {
+  team: { id: string; name: string; shortName?: string | null };
+  window: number;
+  venue: 'ALL' | 'HOME' | 'AWAY';
+  sort: 'lift' | 'rate' | 'run';
+  lookbackDays: number;
+  matchesSeen: number;
+  marketsMeasured: number;
+  caveat: string | null;
+  markets: TeamMarketForm[];
+}
+
+export interface FixtureFormResponse {
+  event: { id: string; kickoffAt: string; league: { name: string } };
+  home: TeamFormResponse;
+  away: TeamFormResponse;
+}

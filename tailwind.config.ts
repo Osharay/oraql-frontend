@@ -94,6 +94,13 @@ const config: Config = {
         'body-sm':    ['0.8125rem', { lineHeight: '1.5' }],
         'caption':    ['0.75rem', { lineHeight: '1.5' }],
         'mono-sm':    ['0.75rem', { lineHeight: '1.5', fontWeight: '500' }],
+        // Section headings. These were used across the streak, cluster and
+        // admin pages without being defined, so they produced no CSS and every
+        // one of those headings fell back to the default size.
+        'h2':         ['2rem', { lineHeight: '1.15', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'h3':         ['1.5rem', { lineHeight: '1.2', fontWeight: '600' }],
+        'h4':         ['1.25rem', { lineHeight: '1.3', fontWeight: '600' }],
+        'h5':         ['1.0625rem', { lineHeight: '1.35', fontWeight: '600' }],
       },
 
       // ─── Spacing ───

@@ -6,6 +6,7 @@ import { ArrowLeft, Star, Clock, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { cn, formatKickoff, formatCategory } from '@/lib/utils';
 import { PickCard } from '@/components/picks/PickCard';
+import { FixtureForm } from '@/components/streaks/FixtureForm';
 import { MarketChip } from '@/components/markets/MarketChip';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { Button } from '@/components/ui/Button';
@@ -103,11 +104,21 @@ export default function EventDetailPage() {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
             <div className="flex-1">
               <h1 className="font-display text-display-md md:text-display-lg tracking-tight text-txt-primary break-words">
-                {event.homeTeam.name}
+                <Link
+                  href={`/teams/${event.homeTeam.id}`}
+                  className="decoration-oracle-gold/60 underline-offset-4 hover:underline"
+                >
+                  {event.homeTeam.name}
+                </Link>
               </h1>
               <p className="my-3 text-body text-txt-tertiary">vs</p>
               <h1 className="font-display text-display-md md:text-display-lg tracking-tight text-txt-primary break-words">
-                {event.awayTeam.name}
+                <Link
+                  href={`/teams/${event.awayTeam.id}`}
+                  className="decoration-oracle-gold/60 underline-offset-4 hover:underline"
+                >
+                  {event.awayTeam.name}
+                </Link>
               </h1>
             </div>
 
@@ -139,6 +150,21 @@ export default function EventDetailPage() {
               )}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ─── Market form: both sides, each at the venue they play it at ─── */}
+      <section className="px-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-4">
+            <h2 className="font-display text-heading tracking-tight text-txt-primary">
+              Market form
+            </h2>
+            <p className="mt-1 text-body-sm text-txt-secondary">
+              The last 10 matches for each side at this venue, most unusual markets first.
+            </p>
+          </div>
+          <FixtureForm eventId={event.id} />
         </div>
       </section>
 

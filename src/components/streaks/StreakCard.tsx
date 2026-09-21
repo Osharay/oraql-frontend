@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import type { StreakCandidate } from '@/types';
 import { ResultStrip } from './ResultStrip';
@@ -75,6 +76,17 @@ export function StreakCard({
           {candidate.subject?.label && (
             <p className="mt-0.5 text-body-sm text-txt-secondary">
               {candidate.subject.label}
+              {candidate.entity?.type === 'TEAM' && (
+                <>
+                  {' · '}
+                  <Link
+                    href={`/teams/${candidate.entity.id}`}
+                    className="font-medium text-oracle-gold-dark hover:underline"
+                  >
+                    all markets
+                  </Link>
+                </>
+              )}
             </p>
           )}
           <p className="mt-0.5 text-body-sm text-txt-tertiary">
