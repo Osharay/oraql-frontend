@@ -9,6 +9,13 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { OddsSwitch } from '@/components/admin/OddsSwitch';
 import { cn } from '@/lib/utils';
 
+/** "events: 1500 · observations: 154500" for the running banner. */
+function progressLine(progress: Record<string, unknown>): string {
+  return Object.entries(progress)
+    .map(([k, v]) => `${k}: ${typeof v === 'number' ? v.toLocaleString() : String(v)}`)
+    .join(' · ');
+}
+
 /** Leagues the odds job already tracks, as API-Football ids. */
 const DEFAULT_LEAGUES = [
   { id: '39', name: 'Premier League' },
@@ -72,12 +79,34 @@ export default function AdminPage() {
     if (error instanceof ApiError) {
       // A bare 500 tells the reader nothing. The usual cause right now is the
       // database volume being full; the Railway log has the real message.
+      // A job that failed carries its own message; show that, not the
+      // generic line.
+      if (error.status >= 500 && error.message && !/^(Request failed|Internal server error)$/i.test(error.message)) {
+        return `${error.status}: ${error.message}`;
+      }
       if (error.status >= 500) {
         return `${error.status}: server error. Check the Railway deploy log — a full database volume shows up as "No space left on device".`;
       }
       return `${error.status}: ${error.message}`;
     }
+    if (error instanceof TypeError && /fetch/i.test(error.message)) {
+      return 'Could not reach the API (network dropped or the request timed out). The work may still be running on the server — check the Railway log before running it again.';
+    }
     return error instanceof Error ? error.message : 'Unknown error';
+  }
+
+  /**
+   * A background engine job, with its progress shown in the banner while it
+   * runs — a derive over a whole backfill takes minutes.
+   */
+  function job(path: string, body?: unknown) {
+    return api.job(path, body, (progress) =>
+      setStatus((current) =>
+        current && current.state === 'running'
+          ? { ...current, detail: progressLine(progress) }
+          : current,
+      ),
+    );
   }
 
   async function run(key: string, label: string, fn: () => Promise<unknown>) {
@@ -104,12 +133,12 @@ export default function AdminPage() {
       // derived against it, and clusters have to be built from snapshots or
       // the Clusters page has nothing to show however well the engine ran.
       ['Sync market registry', () => api.post('/streaks/registry/sync')],
-      ['Derive observations', () => api.post('/streaks/observations/derive')],
-      ['Compute baselines', () => api.post('/streaks/baselines/compute')],
-      ['Run engine', () => api.post('/streaks/engine/run')],
-      ['Capture snapshots', () => api.post('/streaks/snapshots/capture')],
-      ['Build clusters', () => api.post('/streaks/clusters/build', {})],
-      ['Compute team profiles', () => api.post('/streaks/profiles/compute')],
+      ['Derive observations', () => job('/streaks/observations/derive')],
+      ['Compute baselines', () => job('/streaks/baselines/compute')],
+      ['Run engine', () => job('/streaks/engine/run')],
+      ['Capture snapshots', () => job('/streaks/snapshots/capture')],
+      ['Build clusters', () => job('/streaks/clusters/build', {})],
+      ['Compute team profiles', () => job('/streaks/profiles/compute')],
     ];
 
     let failed = false;
@@ -371,7 +400,7 @@ export default function AdminPage() {
             disabled={busy}
             onClick={() =>
               run('derive', 'Derive observations', () =>
-                api.post('/streaks/observations/derive'),
+                job('/streaks/observations/derive'),
               )
             }
           >
@@ -383,7 +412,7 @@ export default function AdminPage() {
             disabled={busy}
             onClick={() =>
               run('baselines', 'Compute baselines', () =>
-                api.post('/streaks/baselines/compute'),
+                job('/streaks/baselines/compute'),
               )
             }
           >
@@ -394,7 +423,7 @@ export default function AdminPage() {
             size="sm"
             disabled={busy}
             onClick={() =>
-              run('engine', 'Run engine', () => api.post('/streaks/engine/run'))
+              run('engine', 'Run engine', () => job('/streaks/engine/run'))
             }
           >
             4. Run engine
@@ -405,7 +434,7 @@ export default function AdminPage() {
             disabled={busy}
             onClick={() =>
               run('capture', 'Capture snapshots', () =>
-                api.post('/streaks/snapshots/capture'),
+                job('/streaks/snapshots/capture'),
               )
             }
           >
@@ -417,7 +446,7 @@ export default function AdminPage() {
             disabled={busy}
             onClick={() =>
               run('clusters', 'Build clusters', () =>
-                api.post('/streaks/clusters/build', {}),
+                job('/streaks/clusters/build', {}),
               )
             }
           >
@@ -429,7 +458,7 @@ export default function AdminPage() {
             disabled={busy}
             onClick={() =>
               run('profiles', 'Compute team profiles', () =>
-                api.post('/streaks/profiles/compute'),
+                job('/streaks/profiles/compute'),
               )
             }
           >
