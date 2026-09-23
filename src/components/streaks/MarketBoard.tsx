@@ -49,7 +49,11 @@ const CONFIDENCE_LABEL: Record<string, string> = {
 export function MarketBoard({ eventId }: { eventId: string }) {
   const [sort, setSort] = useState('probability');
   const [group, setGroup] = useState('all');
-  const [showThin, setShowThin] = useState(true);
+  // A market with no record at all is not evidence of anything: at 50% it is
+  // the market's own prior wearing a fixture's name. Those rows are out
+  // unless asked for. Thin rows stay, marked, because a short record is still
+  // a record.
+  const [showEmpty, setShowEmpty] = useState(false);
   const [data, setData] = useState<BoardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,8 +75,8 @@ export function MarketBoard({ eventId }: { eventId: string }) {
     const test = GROUPS.find(([k]) => k === group)?.[2] ?? (() => true);
     return (data?.rows ?? [])
       .filter(test)
-      .filter((r) => showThin || (r.confidence !== 'low' && r.confidence !== 'none'));
-  }, [data, group, showThin]);
+      .filter((r) => showEmpty || r.confidence !== 'none');
+  }, [data, group, showEmpty]);
 
   if (loading && !data) {
     return (
@@ -84,6 +88,25 @@ export function MarketBoard({ eventId }: { eventId: string }) {
 
   if (error || !data) {
     return <p className="py-6 text-body-sm text-txt-tertiary">The market board is not available for this fixture yet.</p>;
+  }
+
+  // Neither club has a settled match on record: every row would be the market's
+  // own average with a fixture's name on it. Say that instead of printing a
+  // hundred rows of 50%.
+  if (data.measured === 0) {
+    return (
+      <div className="rounded-oracle-md border border-warm-stone bg-warm-cream px-5 py-6">
+        <p className="font-display text-body font-semibold text-txt-primary">
+          No history for either club yet
+        </p>
+        <p className="mt-1 text-body-sm text-txt-secondary">
+          {data.event.home.name} and {data.event.away.name} have no settled matches on record,
+          so there is nothing to work the {data.markets} market rows out from. Competitions
+          enter the engine once their history has been backfilled — smaller and youth
+          competitions often have none available at all.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -102,8 +125,8 @@ export function MarketBoard({ eventId }: { eventId: string }) {
             {label}
           </Pill>
         ))}
-        <Pill small active={!showThin} onClick={() => setShowThin((v) => !v)}>
-          {showThin ? 'Hide thin evidence' : 'Thin evidence hidden'}
+        <Pill small active={showEmpty} onClick={() => setShowEmpty((v) => !v)}>
+          {showEmpty ? 'Hiding nothing' : 'Show markets with no history'}
         </Pill>
       </div>
 

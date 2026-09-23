@@ -177,8 +177,9 @@ export default function EventDetailPage() {
               Every market for this match
             </h2>
             <p className="mt-1 text-body-sm text-txt-secondary">
-              All 70 markets worked out from both sides&rsquo; record at the venue they play this
-              one at, with the evidence behind each on the row.
+              Every market in the registry, worked out from both sides&rsquo; record at the venue
+              they play this one at — one row per club where a market is about one team, with
+              the evidence behind each on the row.
             </p>
           </div>
           <MarketBoard eventId={event.id} />
