@@ -324,6 +324,16 @@ export default function AdminPage() {
           >
             What is missing?
           </Button>
+
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() =>
+              run('odds-check', 'Odds API key check', () => api.get('/ingest/odds/diagnose'))
+            }
+          >
+            Check odds API key
+          </Button>
         </div>
       </section>
 
