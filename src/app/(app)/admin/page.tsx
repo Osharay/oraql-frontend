@@ -284,6 +284,49 @@ export default function AdminPage() {
         </div>
       </section>
 
+      {/* ─── Coverage ─── */}
+      <section className="mb-6 rounded-oracle-md border border-warm-stone bg-white p-6 shadow-soft">
+        <div className="mb-4 flex items-center gap-2">
+          <Database className="h-5 w-5 text-oracle-gold" />
+          <h2 className="font-display text-h4 text-txt-primary">League coverage</h2>
+        </div>
+
+        <p className="mb-4 text-body-sm text-txt-secondary">
+          Reads the leagues of the fixtures actually coming up and backfills history for
+          the ones that have none — one request per league-season, so breadth is cheap.
+          A fixture whose league has no history behind it can never produce a streak, so
+          this is what decides how much of the card the engine can see. It runs after
+          every daily ingest and is capped per run, picking up where it left off.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="secondary"
+            disabled={busy}
+            onClick={() =>
+              run('coverage', 'Widen league coverage', () => api.post('/ingest/coverage', {}))
+            }
+          >
+            {running === 'coverage' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+            Widen coverage now
+          </Button>
+
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() =>
+              run('coverage-preview', 'Coverage gaps', () => api.get('/ingest/coverage'))
+            }
+          >
+            What is missing?
+          </Button>
+        </div>
+      </section>
+
       {/* ─── Backfill ─── */}
       <section className="mb-6 rounded-oracle-md border border-warm-stone bg-white p-6 shadow-soft">
         <div className="mb-4 flex items-center gap-2">
