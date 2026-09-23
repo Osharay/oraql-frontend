@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { cn, formatKickoff, formatCategory } from '@/lib/utils';
 import { PickCard } from '@/components/picks/PickCard';
 import { FixtureForm } from '@/components/streaks/FixtureForm';
+import { MarketBoard } from '@/components/streaks/MarketBoard';
 import { MarketChip } from '@/components/markets/MarketChip';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { Button } from '@/components/ui/Button';
@@ -165,6 +166,22 @@ export default function EventDetailPage() {
             </p>
           </div>
           <FixtureForm eventId={event.id} />
+        </div>
+      </section>
+
+      {/* ─── Every market, estimated for this fixture ─── */}
+      <section className="px-6 pt-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-4">
+            <h2 className="font-display text-heading tracking-tight text-txt-primary">
+              Every market for this match
+            </h2>
+            <p className="mt-1 text-body-sm text-txt-secondary">
+              All 70 markets worked out from both sides&rsquo; record at the venue they play this
+              one at, with the evidence behind each on the row.
+            </p>
+          </div>
+          <MarketBoard eventId={event.id} />
         </div>
       </section>
 

@@ -338,3 +338,42 @@ export interface FixtureFormResponse {
   home: TeamFormResponse;
   away: TeamFormResponse;
 }
+
+// ─── Fixture market board ───
+
+export interface BoardRow {
+  marketId: string;
+  marketLabel: string;
+  category: string;
+  scope: 'TEAM' | 'MATCH';
+  side: 'HOME' | 'AWAY' | 'MATCH';
+  subject: string;
+  probability: number;
+  baselineRate: number | null;
+  edge: number | null;
+  wins: number;
+  played: number;
+  confidence: 'high' | 'medium' | 'low' | 'none';
+  confidenceNote: string;
+  recent: string;
+  currentRun: number;
+  evidence: Array<{ label: string; wins: number; played: number }>;
+  gated: boolean;
+}
+
+export interface BoardResponse {
+  event: {
+    id: string;
+    kickoffAt: string;
+    status: string;
+    league: { name: string; country: string | null } | null;
+    home: { id: string; name: string };
+    away: { id: string; name: string };
+  };
+  sort: string;
+  markets: number;
+  measured: number;
+  lookbackDays: number;
+  caveat: string;
+  rows: BoardRow[];
+}

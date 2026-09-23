@@ -1,0 +1,211 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { Loader2, ShieldCheck } from 'lucide-react';
+import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
+import { ResultStrip } from './ResultStrip';
+import type { BoardResponse, BoardRow } from '@/types';
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+
+const SORTS: Array<[string, string]> = [
+  ['probability', 'Most likely'],
+  ['edge', 'Above the market'],
+  ['run', 'Longest run'],
+  ['confidence', 'Best evidenced'],
+];
+
+const GROUPS: Array<[string, string, (r: BoardRow) => boolean]> = [
+  ['all', 'All markets', () => true],
+  ['home', 'Home side', (r) => r.side === 'HOME'],
+  ['away', 'Away side', (r) => r.side === 'AWAY'],
+  ['match', 'Match totals', (r) => r.side === 'MATCH'],
+  ['halves', 'Halves', (r) => r.category === 'HALFTIME'],
+];
+
+/** What a row is built on, said plainly rather than as a number. */
+const CONFIDENCE_STYLE: Record<string, string> = {
+  high: 'bg-lift-pos/20 text-lift-strong',
+  medium: 'bg-oracle-gold/15 text-oracle-gold-dark',
+  low: 'bg-warm-sand text-txt-tertiary',
+  none: 'bg-warm-sand text-txt-tertiary',
+};
+
+const CONFIDENCE_LABEL: Record<string, string> = {
+  high: 'Well evidenced',
+  medium: 'Some evidence',
+  low: 'Thin evidence',
+  none: 'No history yet',
+};
+
+/**
+ * Every market in the registry, estimated for this fixture.
+ *
+ * The gated engine answers "is this more than luck", and most days it says no.
+ * This answers the question the client actually asks of a fixture: what does
+ * each market look like here, and how much is behind it.
+ */
+export function MarketBoard({ eventId }: { eventId: string }) {
+  const [sort, setSort] = useState('probability');
+  const [group, setGroup] = useState('all');
+  const [showThin, setShowThin] = useState(true);
+  const [data, setData] = useState<BoardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    api
+      .get<BoardResponse>(`/streaks/board/event/${eventId}?sort=${sort}`)
+      .then((r) => !cancelled && setData(r))
+      .catch((e) => !cancelled && setError(e?.message ?? 'Could not load the market board'))
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [eventId, sort]);
+
+  const rows = useMemo(() => {
+    const test = GROUPS.find(([k]) => k === group)?.[2] ?? (() => true);
+    return (data?.rows ?? [])
+      .filter(test)
+      .filter((r) => showThin || (r.confidence !== 'low' && r.confidence !== 'none'));
+  }, [data, group, showThin]);
+
+  if (loading && !data) {
+    return (
+      <div className="flex items-center gap-2 py-10 text-body-sm text-txt-tertiary">
+        <Loader2 className="h-4 w-4 animate-spin" /> Working out every market for this fixture
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return <p className="py-6 text-body-sm text-txt-tertiary">The market board is not available for this fixture yet.</p>;
+  }
+
+  return (
+    <div>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        {SORTS.map(([k, label]) => (
+          <Pill key={k} active={sort === k} onClick={() => setSort(k)}>
+            {label}
+          </Pill>
+        ))}
+      </div>
+
+      <div className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide sm:mx-0 sm:flex-wrap sm:px-0">
+        {GROUPS.map(([k, label]) => (
+          <Pill key={k} small active={group === k} onClick={() => setGroup(k)}>
+            {label}
+          </Pill>
+        ))}
+        <Pill small active={!showThin} onClick={() => setShowThin((v) => !v)}>
+          {showThin ? 'Hide thin evidence' : 'Thin evidence hidden'}
+        </Pill>
+      </div>
+
+      <p className="mb-4 rounded-oracle-sm border border-warm-stone bg-warm-cream px-4 py-3 text-caption text-txt-secondary">
+        {data.caveat}
+      </p>
+
+      <ul className="divide-y divide-warm-sand overflow-hidden rounded-oracle-md border border-warm-stone bg-white">
+        {rows.map((r) => (
+          <li key={`${r.marketId}:${r.side}`} className="px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="flex flex-wrap items-center gap-2 text-body-sm font-medium text-txt-primary">
+                  {r.marketLabel}
+                  {r.gated && (
+                    <span
+                      title="The strict engine also found this slice significant for this fixture."
+                      className="inline-flex items-center gap-1 rounded-oracle-full bg-lift-pos/20 px-2 py-0.5 text-caption font-semibold text-lift-strong"
+                    >
+                      <ShieldCheck className="h-3 w-3" /> Evidence-backed
+                    </span>
+                  )}
+                </p>
+                <p className="mt-0.5 text-caption text-txt-tertiary">{r.subject}</p>
+              </div>
+
+              <div className="shrink-0 text-right">
+                <p className="font-display text-h5 leading-none text-txt-primary">
+                  {pct(r.probability)}
+                </p>
+                <p className="mt-1 text-caption text-txt-tertiary">
+                  {r.played > 0 ? `${r.wins}/${r.played}` : 'no record'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+              {r.recent && <ResultStrip last10={r.recent} />}
+              <span className="text-caption text-txt-tertiary">
+                usually {r.baselineRate != null ? pct(r.baselineRate) : '—'}
+              </span>
+              {r.edge != null && (
+                <span
+                  className={cn(
+                    'text-caption',
+                    r.edge > 0.05 ? 'text-lift-strong' : 'text-txt-tertiary',
+                  )}
+                >
+                  {r.edge >= 0 ? '+' : ''}
+                  {Math.round(r.edge * 100)} pts
+                </span>
+              )}
+              {r.currentRun > 1 && (
+                <span className="text-caption text-txt-secondary">{r.currentRun} in a row</span>
+              )}
+              <span
+                title={r.confidenceNote}
+                className={cn(
+                  'ml-auto rounded-oracle-full px-2 py-0.5 text-caption font-semibold',
+                  CONFIDENCE_STYLE[r.confidence],
+                )}
+              >
+                {CONFIDENCE_LABEL[r.confidence]}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {rows.length === 0 && (
+        <p className="py-6 text-body-sm text-txt-tertiary">
+          Nothing in this group yet. History has to be backfilled for both clubs before their
+          markets can be measured.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Pill({
+  active,
+  small,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  small?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'shrink-0 whitespace-nowrap rounded-oracle-full border font-medium transition-all duration-normal',
+        small ? 'px-3 py-1 text-caption' : 'px-4 py-2 text-body-sm',
+        active
+          ? 'border-oracle-gold bg-oracle-gold/10 text-txt-primary'
+          : 'border-warm-stone bg-warm-cream text-txt-tertiary hover:text-txt-secondary',
+      )}
+    >
+      {children}
+    </button>
+  );
+}
