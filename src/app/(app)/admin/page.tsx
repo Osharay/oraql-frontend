@@ -334,6 +334,18 @@ export default function AdminPage() {
           >
             Check odds API key
           </Button>
+
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() =>
+              run('provider-check', 'Provider check', () =>
+                api.get('/ingest/provider/diagnose'),
+              )
+            }
+          >
+            Why no match stats?
+          </Button>
         </div>
       </section>
 
