@@ -37,16 +37,39 @@ function componentSubject(c: ClusterComponent): string {
 export function ClusterCard({ cluster }: { cluster: Cluster }) {
   const pct = (v: number) => Math.round(v * 100);
   const n = cluster.componentCount;
+  const suggestive = cluster.tier === 'suggestive';
 
   return (
-    <article className="overflow-hidden rounded-oracle-md border border-warm-stone bg-white shadow-soft">
+    <article
+      className={cn(
+        'overflow-hidden rounded-oracle-md border bg-white shadow-soft',
+        suggestive ? 'border-dashed border-warm-stone' : 'border-warm-stone',
+      )}
+    >
       <header className="flex items-baseline justify-between gap-4 border-b border-warm-sand bg-warm-cream px-5 py-4">
         <div>
-          <p className="font-display text-h5 text-txt-primary">
-            {n} unrelated streaks
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-display text-h5 text-txt-primary">
+              {n} unrelated streaks
+            </p>
+            {/* The one thing a reader must not get wrong: whether luck has
+                been ruled out for these, or only that the run looks good. */}
+            <span
+              title={cluster.caveat}
+              className={cn(
+                'rounded-oracle-full px-2 py-0.5 text-caption font-semibold',
+                suggestive
+                  ? 'bg-warm-sand text-txt-secondary'
+                  : 'bg-lift-pos/20 text-lift-strong',
+              )}
+            >
+              {cluster.label ?? 'Evidence-backed'}
+            </span>
+          </div>
           <p className="mt-0.5 text-body-sm text-txt-tertiary">
-            Different matches, different markets
+            {suggestive
+              ? 'Strong recent form — not shown to be more than luck'
+              : 'Different matches, different markets'}
           </p>
         </div>
 

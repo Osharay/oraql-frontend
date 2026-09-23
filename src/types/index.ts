@@ -282,6 +282,10 @@ export interface Cluster {
   id: string;
   date: string;
   type: string;
+  /** Sent by the API: whether every component cleared the significance gate. */
+  tier?: 'evidence' | 'suggestive';
+  label?: string;
+  caveat?: string;
   componentCount: number;
   combinedProbability: number;
   status: StreakStatus;

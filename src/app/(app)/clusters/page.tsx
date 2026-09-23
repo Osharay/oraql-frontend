@@ -27,6 +27,8 @@ export default function ClustersPage() {
   }, []);
 
   const clusters = data?.clusters ?? [];
+  const suggestiveOnly =
+    clusters.length > 0 && clusters.every((c) => c.tier === 'suggestive');
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
@@ -54,6 +56,15 @@ export default function ClustersPage() {
           body="A cluster needs at least two streaks that each cleared the bar on their own, from different events and different markets."
           detail="On days when few streaks qualify, there is nothing to gather. That is expected rather than a fault."
         />
+      )}
+
+      {!loading && suggestiveOnly && (
+        <p className="mb-6 rounded-oracle-sm border border-warm-stone bg-warm-cream px-4 py-3 text-body-sm text-txt-secondary">
+          Nothing cleared the significance gate today. What follows is the next
+          tier down: teams whose recent record sits well above the market's usual
+          rate, which is a lead to check rather than a finding. Their results are
+          tracked separately, so the tier can be judged on its own record.
+        </p>
       )}
 
       {!loading && clusters.length > 0 && (
