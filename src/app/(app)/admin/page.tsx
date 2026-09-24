@@ -42,6 +42,7 @@ export default function AdminPage() {
   const [leagues, setLeagues] = useState<string[]>(DEFAULT_LEAGUES.map((l) => l.id));
   const [seasons, setSeasons] = useState<number[]>(DEFAULT_SEASONS);
   const [confirmBackfill, setConfirmBackfill] = useState(false);
+  const [confirmReclaim, setConfirmReclaim] = useState(false);
   /**
    * What the last button did, shown pinned to the screen. Results used to go
    * only to the Output panel at the foot of the page — below the fold from
@@ -346,6 +347,49 @@ export default function AdminPage() {
           >
             Why no match stats?
           </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy}
+            onClick={() =>
+              run('seed', 'Seed competitions', () =>
+                api.post('/ingest/competitions/seed', {}),
+              )
+            }
+          >
+            Seed target competitions
+          </Button>
+
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() =>
+              run('competitions', 'Target competitions', () => api.get('/ingest/competitions'))
+            }
+          >
+            List competitions
+          </Button>
+
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() =>
+              run('reclaimable', 'Space check', () =>
+                api.get('/streaks/observations/reclaimable'),
+              )
+            }
+          >
+            What can be reclaimed?
+          </Button>
+
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() => setConfirmReclaim(true)}
+          >
+            Reclaim space
+          </Button>
         </div>
       </section>
 
@@ -568,6 +612,24 @@ export default function AdminPage() {
           </div>
         )}
       </section>
+
+      <ConfirmDialog
+        open={confirmReclaim}
+        title="Delete observations outside the target competitions?"
+        description="Rows for competitions not on the target list, and for matches older than the derive window, are deleted. Fixtures and scores are kept, so widening the window or adding a competition back derives them again."
+        details={[
+          'Nothing the product currently measures is touched',
+          'Deleting rows cannot be undone, but they can be derived again from the fixtures',
+          'Run the space check first to see how many rows this is',
+        ]}
+        confirmLabel="Reclaim space"
+        variant="gold"
+        onCancel={() => setConfirmReclaim(false)}
+        onConfirm={() => {
+          setConfirmReclaim(false);
+          run('reclaim', 'Reclaim space', () => job('/streaks/observations/reclaim'));
+        }}
+      />
 
       <ConfirmDialog
         open={confirmBackfill}
