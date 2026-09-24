@@ -49,11 +49,11 @@ const CONFIDENCE_LABEL: Record<string, string> = {
 export function MarketBoard({ eventId }: { eventId: string }) {
   const [sort, setSort] = useState('probability');
   const [group, setGroup] = useState('all');
-  // A market with no record at all is not evidence of anything: at 50% it is
-  // the market's own prior wearing a fixture's name. Those rows are out
-  // unless asked for. Thin rows stay, marked, because a short record is still
-  // a record.
-  const [showEmpty, setShowEmpty] = useState(false);
+  // Ten settled matches or it is not a measurement. Thinner rows are kept
+  // out of the ranking and gathered at the foot of the page, shown on
+  // request: a 1/1 row at 85% is the market's own average with a fixture's
+  // name on it, and ranking it first is how the board misled.
+  const [showThin, setShowThin] = useState(false);
   const [data, setData] = useState<BoardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,12 +71,16 @@ export function MarketBoard({ eventId }: { eventId: string }) {
     };
   }, [eventId, sort]);
 
-  const rows = useMemo(() => {
+  const floor = data?.evidenceFloor ?? 10;
+
+  const { measured, thin } = useMemo(() => {
     const test = GROUPS.find(([k]) => k === group)?.[2] ?? (() => true);
-    return (data?.rows ?? [])
-      .filter(test)
-      .filter((r) => showEmpty || r.confidence !== 'none');
-  }, [data, group, showEmpty]);
+    const inGroup = (data?.rows ?? []).filter(test);
+    return {
+      measured: inGroup.filter((r) => r.played >= floor),
+      thin: inGroup.filter((r) => r.played > 0 && r.played < floor),
+    };
+  }, [data, group, floor]);
 
   if (loading && !data) {
     return (
@@ -90,9 +94,8 @@ export function MarketBoard({ eventId }: { eventId: string }) {
     return <p className="py-6 text-body-sm text-txt-tertiary">The market board is not available for this fixture yet.</p>;
   }
 
-  // Neither club has a settled match on record: every row would be the market's
-  // own average with a fixture's name on it. Say that instead of printing a
-  // hundred rows of 50%.
+  // Nothing clears the floor: every row would be the market's own average
+  // with a fixture's name on it. Say that instead of printing a hundred rows.
   if (data.measured === 0) {
     return (
       <div className="rounded-oracle-md border border-warm-stone bg-warm-cream px-5 py-6">
@@ -100,10 +103,13 @@ export function MarketBoard({ eventId }: { eventId: string }) {
           No history for either club yet
         </p>
         <p className="mt-1 text-body-sm text-txt-secondary">
-          {data.event.home.name} and {data.event.away.name} have no settled matches on record,
-          so there is nothing to work the {data.markets} market rows out from. Competitions
-          enter the engine once their history has been backfilled — smaller and youth
-          competitions often have none available at all.
+          No market has {floor} settled matches behind it for {data.event.home.name} or{' '}
+          {data.event.away.name}
+          {data.someHistory > 0
+            ? `, though ${data.someHistory} have a match or two — too little to measure.`
+            : '.'}{' '}
+          A competition can be measured once its history has been backfilled; smaller ones often
+          have none available at all.
         </p>
       </div>
     );
@@ -125,9 +131,11 @@ export function MarketBoard({ eventId }: { eventId: string }) {
             {label}
           </Pill>
         ))}
-        <Pill small active={showEmpty} onClick={() => setShowEmpty((v) => !v)}>
-          {showEmpty ? 'Hiding nothing' : 'Show markets with no history'}
-        </Pill>
+        {thin.length > 0 && (
+          <Pill small active={showThin} onClick={() => setShowThin((v) => !v)}>
+            {showThin ? 'Hide thin rows' : `Show ${thin.length} thin rows`}
+          </Pill>
+        )}
       </div>
 
       <p className="mb-4 rounded-oracle-sm border border-warm-stone bg-warm-cream px-4 py-3 text-caption text-txt-secondary">
@@ -135,7 +143,7 @@ export function MarketBoard({ eventId }: { eventId: string }) {
       </p>
 
       <ul className="divide-y divide-warm-sand overflow-hidden rounded-oracle-md border border-warm-stone bg-white">
-        {rows.map((r) => (
+        {measured.map((r) => (
           <li key={`${r.marketId}:${r.side}`} className="px-4 py-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -196,11 +204,29 @@ export function MarketBoard({ eventId }: { eventId: string }) {
         ))}
       </ul>
 
-      {rows.length === 0 && (
+      {measured.length === 0 && (
         <p className="py-6 text-body-sm text-txt-tertiary">
-          Nothing in this group yet. History has to be backfilled for both clubs before their
-          markets can be measured.
+          Nothing in this group has {floor} settled matches behind it yet.
         </p>
+      )}
+
+      {/* Below the floor: kept, never ranked, and never above a real row. */}
+      {showThin && thin.length > 0 && (
+        <div className="mt-6">
+          <p className="mb-2 text-caption text-txt-tertiary">
+            Fewer than {floor} settled matches behind these — shown for completeness, not ranked.
+          </p>
+          <ul className="divide-y divide-warm-sand overflow-hidden rounded-oracle-md border border-dashed border-warm-stone bg-warm-cream/40">
+            {thin.map((r) => (
+              <li key={`${r.marketId}:${r.side}`} className="flex items-baseline justify-between gap-3 px-4 py-2">
+                <span className="min-w-0 text-body-sm text-txt-secondary">{r.marketLabel}</span>
+                <span className="shrink-0 text-caption text-txt-tertiary">
+                  {r.wins}/{r.played} settled
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

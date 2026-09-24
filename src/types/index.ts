@@ -372,7 +372,10 @@ export interface BoardResponse {
   };
   sort: string;
   markets: number;
+  /** Rows with at least `evidenceFloor` settled matches behind them. */
   measured: number;
+  someHistory: number;
+  evidenceFloor: number;
   lookbackDays: number;
   caveat: string;
   rows: BoardRow[];
