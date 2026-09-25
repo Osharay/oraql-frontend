@@ -9,6 +9,16 @@ interface LiftMeterProps {
 }
 
 /**
+ * The gap as a multiple of the usual rate. "+25 pts" read as a score to back;
+ * "2.0× usual" says what it is — how much more often than a typical side.
+ */
+function timesUsual(hitRate: number, baselineRate: number): string {
+  if (baselineRate <= 0) return '';
+  const ratio = hitRate / baselineRate;
+  return `${ratio >= 10 ? Math.round(ratio) : ratio.toFixed(1)}× usual`;
+}
+
+/**
  * Observed rate against the baseline it is judged by.
  *
  * The baseline is drawn as a reference line rather than left implicit, because
@@ -25,7 +35,15 @@ export function LiftMeter({ hitRate, baselineRate, className }: LiftMeterProps) 
         <div
           className={cn(
             'h-full rounded-oracle-full transition-all duration-normal',
-            lift > 0.05 ? 'bg-lift-strong' : lift > 0 ? 'bg-lift-pos' : 'bg-lift-neg',
+            // Under half is less likely than not: a tendency, never drawn in
+            // the colour that reads as "back this".
+            hitRate < 0.5
+              ? 'bg-txt-tertiary/50'
+              : lift > 0.05
+                ? 'bg-lift-strong'
+                : lift > 0
+                  ? 'bg-lift-pos'
+                  : 'bg-lift-neg',
           )}
           style={{ width: `${Math.min(Math.max(hitRate, 0), 1) * 100}%` }}
         />
@@ -42,9 +60,14 @@ export function LiftMeter({ hitRate, baselineRate, className }: LiftMeterProps) 
           <span className="font-semibold text-txt-primary">{pct(hitRate)}</span> observed
         </span>
         <span>baseline {pct(baselineRate)}</span>
-        <span className={cn('font-semibold', lift > 0 ? 'text-lift-strong' : 'text-txt-tertiary')}>
-          {lift >= 0 ? '+' : ''}
-          {Math.round(lift * 100)} pts
+        <span
+          className={cn(
+            'font-semibold',
+            lift > 0 && hitRate >= 0.5 ? 'text-lift-strong' : 'text-txt-secondary',
+          )}
+          title={`${lift >= 0 ? '+' : ''}${Math.round(lift * 100)} points above the usual rate`}
+        >
+          {timesUsual(hitRate, baselineRate)}
         </span>
       </div>
     </div>

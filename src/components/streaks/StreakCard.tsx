@@ -53,6 +53,11 @@ export function StreakCard({
   const venue = candidate.context?.venue;
   const subject = candidate.entity?.shortName || candidate.entity?.name;
   const coincidence = coincidenceCopy(candidate.adjustedPValue);
+  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  // Below half, it fails more often than it lands. Still a real finding about
+  // the team — but a tendency to know, not a selection to back.
+  const tendency = candidate.hitRate < 0.5;
+  const season = candidate.thisSeason;
 
   return (
     <article
@@ -89,22 +94,48 @@ export function StreakCard({
               )}
             </p>
           )}
+          <p className="mt-2 text-body font-semibold text-txt-primary">
+            Happens in {pct(candidate.hitRate)} of their matches
+          </p>
           <p className="mt-0.5 text-body-sm text-txt-tertiary">
             {venuePhrase(venue)}
             {' · '}
-            landed {candidate.wins} of {candidate.sampleSize} settled matches
+            {candidate.wins} of {candidate.sampleSize} settled matches
+            {season && season.played > 0 && (
+              <>
+                {' · '}
+                <span className="text-txt-secondary">
+                  this season {season.wins} of {season.played} ({pct(season.wins / season.played)})
+                </span>
+              </>
+            )}
           </p>
         </div>
 
-        <span
-          className={cn(
-            'shrink-0 rounded-oracle-full px-2.5 py-1 text-caption font-semibold',
-            status.className,
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span
+            className={cn(
+              'rounded-oracle-full px-2.5 py-1 text-caption font-semibold',
+              status.className,
+            )}
+          >
+            {status.label}
+          </span>
+          {tendency && (
+            <span className="rounded-oracle-full bg-warm-sand px-2.5 py-1 text-caption font-semibold text-txt-secondary">
+              Tendency, not a pick
+            </span>
           )}
-        >
-          {status.label}
-        </span>
+        </div>
       </div>
+
+      {tendency && (
+        <p className="mt-3 rounded-oracle-sm bg-warm-cream px-3 py-2 text-body-sm text-txt-secondary">
+          Less likely than not: it fails in {pct(1 - candidate.hitRate)} of their matches. What
+          stands out is that it happens {(candidate.hitRate / candidate.baselineRate).toFixed(1)}×
+          as often as for a typical side.
+        </p>
+      )}
 
       <div className="mt-4">
         <LiftMeter hitRate={candidate.hitRate} baselineRate={candidate.baselineRate} />
@@ -141,10 +172,9 @@ export function StreakCard({
             </dd>
           </div>
           <div>
-            <dt className="text-txt-tertiary">Above the usual rate</dt>
+            <dt className="text-txt-tertiary">Against the usual rate</dt>
             <dd className="font-semibold text-txt-primary">
-              {candidate.lift >= 0 ? '+' : ''}
-              {Math.round(candidate.lift * 100)} points
+              {pct(candidate.hitRate)} vs {pct(candidate.baselineRate)}
             </dd>
           </div>
           <div>

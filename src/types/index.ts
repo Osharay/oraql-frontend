@@ -225,6 +225,8 @@ export interface StreakCandidate {
   status: StreakStatus;
   survivedGate: boolean;
   marketDefinition: MarketDefinitionSummary;
+  /** The same market in the team's current season, when the API has it. */
+  thisSeason?: { season: number; wins: number; played: number } | null;
   /**
    * The team or league the record belongs to, resolved by the API. Without it
    * a card shows a market and never says whose record it is.
