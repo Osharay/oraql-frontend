@@ -210,7 +210,12 @@ export interface StreakCandidate {
   id: string;
   entityId: string;
   selection: 'HOME' | 'AWAY' | 'MATCH' | null;
-  context?: { venue?: string } | null;
+  context?: {
+    venue?: string;
+    /** Set when the team changed league: the record is this season only. */
+    leagueChanged?: boolean;
+    currentSeasonOnly?: number;
+  } | null;
   sampleSize: number;
   wins: number;
   hitRate: number;

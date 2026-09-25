@@ -129,6 +129,13 @@ export function StreakCard({
         </div>
       </div>
 
+      {candidate.context?.leagueChanged && (
+        <p className="mt-3 rounded-oracle-sm bg-warm-cream px-3 py-2 text-body-sm text-txt-secondary">
+          {subject ?? 'This team'} changed league this season, so only this season&apos;s matches
+          are counted. Last season&apos;s record describes a different competition.
+        </p>
+      )}
+
       {tendency && (
         <p className="mt-3 rounded-oracle-sm bg-warm-cream px-3 py-2 text-body-sm text-txt-secondary">
           Less likely than not: it fails in {pct(1 - candidate.hitRate)} of their matches. What
