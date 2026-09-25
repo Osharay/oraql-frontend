@@ -2,15 +2,23 @@
 
 import { useState } from 'react';
 import { Layers, X, Copy, Trash2, ChevronUp } from 'lucide-react';
-import { cn, formatProbability } from '@/lib/utils';
+import { cn, combinedChanceNote, formatCombinedChance } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { marketShortLabel, marketSubject } from '@/lib/market-copy';
 import { useBuilderStore } from '@/stores/builder.store';
 
 export function BuilderBar() {
-  const { selections, count, combinedProbability, remove, clear, exportText } =
-    useBuilderStore();
+  const {
+    selections,
+    count,
+    combinedProbability,
+    combinedRange,
+    sharedMatches,
+    remove,
+    clear,
+    exportText,
+  } = useBuilderStore();
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -64,8 +72,7 @@ export function BuilderBar() {
               </div>
             ))}
             <p className="pt-1 text-caption text-txt-inverse-2">
-              Combined chance assumes every selection lands, and that they are
-              independent of one another.
+              {combinedChanceNote(sharedMatches)}
             </p>
           </div>
         </div>
@@ -89,7 +96,7 @@ export function BuilderBar() {
                 </span>
               </p>
               <p className="text-caption text-txt-inverse-2">
-                {formatProbability(combinedProbability)} chance all{' '}
+                {formatCombinedChance({ combinedProbability, combinedRange })} chance all{' '}
                 {count === 1 ? 'of it lands' : `${count} land`}
               </p>
             </div>

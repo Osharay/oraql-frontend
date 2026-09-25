@@ -47,6 +47,30 @@ export function formatProbability(prob: number): string {
   return `${(prob * 100).toFixed(1)}%`;
 }
 
+/**
+ * The Bet Builder's combined chance: one figure when every selection is from
+ * a different match, a range when some share a match.
+ */
+export function formatCombinedChance(state: {
+  combinedProbability: number | null;
+  combinedRange?: { low: number; high: number };
+}): string {
+  if (state.combinedProbability != null) return formatProbability(state.combinedProbability);
+  const range = state.combinedRange ?? { low: 0, high: 0 };
+  return `${formatProbability(range.low)}–${formatProbability(range.high)}`;
+}
+
+/** The caveat that goes under the combined chance. */
+export function combinedChanceNote(sharedMatches: number): string {
+  if (sharedMatches === 0) {
+    return 'Treats selections from different matches as independent of one another.';
+  }
+  return (
+    `${sharedMatches === 1 ? 'One match has' : `${sharedMatches} matches have`} more than one selection. ` +
+    'Picks from the same match rise and fall together, so this is the range the true chance must fall in.'
+  );
+}
+
 /** Get probability tier: high (>75%), mid (50-75%), low (<50%) */
 export function getProbabilityTier(prob: number): 'high' | 'mid' | 'low' {
   if (prob >= 0.75) return 'high';

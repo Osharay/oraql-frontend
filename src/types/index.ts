@@ -151,7 +151,14 @@ export interface BuilderSelection {
 export interface BuilderState {
   selections: BuilderSelection[];
   count: number;
-  combinedProbability: number;
+  /**
+   * Chance every selection lands. Null when two or more selections share a
+   * match: those move together, so only a range can be given.
+   */
+  combinedProbability: number | null;
+  combinedRange: { low: number; high: number };
+  /** Matches holding more than one selection. */
+  sharedMatches: number;
 }
 
 export interface SportSummary {

@@ -30,6 +30,7 @@ export function PickCard({
 }: PickCardProps) {
   const [expanded, setExpanded] = useState(false);
   const addToBuilder = useBuilderStore((s) => s.add);
+  const [addError, setAddError] = useState<string | null>(null);
   const isDark = variant === 'dark';
 
   const headline = marketHeadline(pick.market, pick.event);
@@ -171,15 +172,20 @@ export function PickCard({
       )}
 
       {/* Add to Builder */}
-      <div className="mt-4 flex justify-end">
+      <div className="mt-4 flex flex-col items-end gap-2">
         <Button
           variant={isDark ? 'gold' : 'primary'}
           size="sm"
-          onClick={() => addToBuilder(pick.market.id)}
+          onClick={async () => setAddError(await addToBuilder(pick.market.id))}
         >
           <Plus className="h-4 w-4" />
           Add to Builder
         </Button>
+        {addError && (
+          <p role="alert" className="text-right text-caption text-danger">
+            {addError}
+          </p>
+        )}
       </div>
     </div>
   );

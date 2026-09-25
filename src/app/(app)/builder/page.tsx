@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { Layers, X, Copy, Trash2, ArrowRight, Sparkles } from 'lucide-react';
-import { cn, formatProbability, formatKickoff } from '@/lib/utils';
+import {
+  cn,
+  combinedChanceNote,
+  formatCombinedChance,
+  formatKickoff,
+} from '@/lib/utils';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { Button } from '@/components/ui/Button';
 import { useBuilderStore } from '@/stores/builder.store';
@@ -10,8 +15,18 @@ import Link from 'next/link';
 import { marketShortLabel, marketSubject } from '@/lib/market-copy';
 
 export default function BuilderPage() {
-  const { selections, count, combinedProbability, load, remove, clear, exportText, isLoading } =
-    useBuilderStore();
+  const {
+    selections,
+    count,
+    combinedProbability,
+    combinedRange,
+    sharedMatches,
+    load,
+    remove,
+    clear,
+    exportText,
+    isLoading,
+  } = useBuilderStore();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -70,10 +85,10 @@ export default function BuilderPage() {
                   Chance every selection lands
                 </p>
                 <p className="font-mono text-display-sm font-bold text-oracle-gold">
-                  {formatProbability(combinedProbability)}
+                  {formatCombinedChance({ combinedProbability, combinedRange })}
                 </p>
                 <p className="mt-2 text-caption text-txt-inverse-2">
-                  Assumes the selections are independent of one another.
+                  {combinedChanceNote(sharedMatches)}
                 </p>
               </div>
 

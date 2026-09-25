@@ -7,7 +7,8 @@ import type { BuilderState, BuilderSelection } from '@/types';
 interface BuilderStore extends BuilderState {
   isLoading: boolean;
   load: () => Promise<void>;
-  add: (marketId: string) => Promise<void>;
+  /** Resolves to null on success, or the reason the selection was refused. */
+  add: (marketId: string) => Promise<string | null>;
   remove: (marketId: string) => Promise<void>;
   clear: () => Promise<void>;
   exportText: () => Promise<string>;
@@ -17,6 +18,8 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
   selections: [],
   count: 0,
   combinedProbability: 1,
+  combinedRange: { low: 1, high: 1 },
+  sharedMatches: 0,
   isLoading: false,
 
   load: async () => {
@@ -30,9 +33,16 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
   },
 
   add: async (marketId) => {
-    await api.post(`/builder/add/${marketId}`);
+    try {
+      await api.post(`/builder/add/${marketId}`);
+    } catch (error) {
+      // The API refuses conflicting selections and matches that have started;
+      // hand the reason back so the button can say why nothing happened.
+      return error instanceof Error ? error.message : 'Could not add this selection';
+    }
     // Reload full state for consistency
     await get().load();
+    return null;
   },
 
   remove: async (marketId) => {
@@ -42,7 +52,13 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
 
   clear: async () => {
     await api.delete('/builder/clear');
-    set({ selections: [], count: 0, combinedProbability: 1 });
+    set({
+      selections: [],
+      count: 0,
+      combinedProbability: 1,
+      combinedRange: { low: 1, high: 1 },
+      sharedMatches: 0,
+    });
   },
 
   exportText: async () => {

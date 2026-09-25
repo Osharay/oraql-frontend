@@ -24,6 +24,7 @@ export default function EventDetailPage() {
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const addToBuilder = useBuilderStore((s) => s.add);
+  const [addError, setAddError] = useState<string | null>(null);
 
   useEffect(() => {
     if (eventId) loadEvent();
@@ -266,7 +267,10 @@ export default function EventDetailPage() {
                       market={market}
                       event={event}
                       isSelected={selectedMarket?.id === market.id}
-                      onClick={() => setSelectedMarket(market)}
+                      onClick={() => {
+                        setSelectedMarket(market);
+                        setAddError(null);
+                      }}
                       variant="light"
                     />
                   </div>
@@ -327,11 +331,16 @@ export default function EventDetailPage() {
                   <Button
                     variant="primary"
                     size="md"
-                    onClick={() => addToBuilder(selectedMarket.id)}
+                    onClick={async () => setAddError(await addToBuilder(selectedMarket.id))}
                     className="w-full"
                   >
                     Add to Bet Builder
                   </Button>
+                  {addError && (
+                    <p role="alert" className="mt-2 text-caption text-danger">
+                      {addError}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
