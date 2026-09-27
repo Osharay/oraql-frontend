@@ -262,6 +262,12 @@ export interface NextFixture {
     kind: 'LEAGUE' | 'CUP';
     round: string | null;
   };
+  /** Who is stronger going in, from team ratings. Null until both are rated. */
+  strength?: {
+    home: { rating: number; tier: 'STRONG' | 'AVERAGE' | 'WEAK' | null };
+    away: { rating: number; tier: 'STRONG' | 'AVERAGE' | 'WEAK' | null };
+    stronger: 'HOME' | 'AWAY' | 'EVEN';
+  } | null;
 }
 
 export interface CandidatesResponse {

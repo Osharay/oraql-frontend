@@ -60,6 +60,11 @@ function FixtureLine({ fixture, teamId }: { fixture: NextFixture; teamId?: strin
     </span>
   );
   const where = [fixture.competition.name, fixture.competition.country].filter(Boolean).join(' · ');
+  const strength = fixture.strength;
+  const strongerName =
+    strength?.stronger === 'HOME' ? fixture.home.name : strength?.stronger === 'AWAY' ? fixture.away.name : null;
+  const tierWord = (t?: string | null) =>
+    t === 'STRONG' ? 'strong' : t === 'AVERAGE' ? 'mid-table' : t === 'WEAK' ? 'weak' : null;
   return (
     <Link
       href={`/events/${fixture.eventId}`}
@@ -81,6 +86,32 @@ function FixtureLine({ fixture, teamId }: { fixture: NextFixture; teamId?: strin
           {fixture.competition.kind === 'CUP' ? 'Cup' : 'League'}
         </span>
       </p>
+      {strength && (
+        <p
+          className="mt-1 text-body-sm text-txt-secondary"
+          title={`Team ratings, from results: ${fixture.home.name} ${strength.home.rating}, ${fixture.away.name} ${strength.away.rating} (home side gets about 60 points for playing at home).`}
+        >
+          {strongerName ? (
+            <>
+              <span className="font-semibold text-txt-primary">{strongerName}</span> the stronger side
+            </>
+          ) : (
+            'Evenly matched'
+          )}
+          {(tierWord(strength.home.tier) || tierWord(strength.away.tier)) && (
+            <span className="text-txt-tertiary">
+              {' · '}
+              {[
+                tierWord(strength.home.tier) && `${fixture.home.name} ${tierWord(strength.home.tier)}`,
+                tierWord(strength.away.tier) && `${fixture.away.name} ${tierWord(strength.away.tier)}`,
+              ]
+                .filter(Boolean)
+                .join(', ')}{' '}
+              in their league
+            </span>
+          )}
+        </p>
+      )}
     </Link>
   );
 }

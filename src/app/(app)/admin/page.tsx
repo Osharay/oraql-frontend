@@ -136,6 +136,7 @@ export default function AdminPage() {
       ['Sync market registry', () => api.post('/streaks/registry/sync')],
       ['Derive observations', () => job('/streaks/observations/derive')],
       ['Compute baselines', () => job('/streaks/baselines/compute')],
+      ['Compute team ratings', () => job('/streaks/ratings/compute')],
       ['Run engine', () => job('/streaks/engine/run')],
       ['Capture snapshots', () => job('/streaks/snapshots/capture')],
       ['Build clusters', () => job('/streaks/clusters/build', {})],
@@ -532,10 +533,22 @@ export default function AdminPage() {
             size="sm"
             disabled={busy}
             onClick={() =>
+              run('ratings', 'Compute team ratings', () =>
+                job('/streaks/ratings/compute'),
+              )
+            }
+          >
+            4. Compute team ratings
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy}
+            onClick={() =>
               run('engine', 'Run engine', () => job('/streaks/engine/run'))
             }
           >
-            4. Run engine
+            5. Run engine
           </Button>
           <Button
             variant="secondary"
@@ -547,7 +560,7 @@ export default function AdminPage() {
               )
             }
           >
-            5. Capture snapshots
+            6. Capture snapshots
           </Button>
           <Button
             variant="secondary"
@@ -559,7 +572,7 @@ export default function AdminPage() {
               )
             }
           >
-            6. Build clusters
+            7. Build clusters
           </Button>
           <Button
             variant="secondary"
@@ -571,7 +584,7 @@ export default function AdminPage() {
               )
             }
           >
-            7. Compute team profiles
+            8. Compute team profiles
           </Button>
         </div>
 
