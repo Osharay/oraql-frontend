@@ -18,6 +18,8 @@ const SORTS: Array<[string, string]> = [
 
 const GROUPS: Array<[string, string, (r: BoardRow) => boolean]> = [
   ['all', 'All markets', () => true],
+  // The client's "common ground": both teams' records lean towards it.
+  ['agree', 'Both sides agree', (r) => r.agreement === 'AGREE_FOR'],
   ['home', 'Home side', (r) => r.side === 'HOME'],
   ['away', 'Away side', (r) => r.side === 'AWAY'],
   ['match', 'Match totals', (r) => r.side === 'MATCH'],
@@ -157,8 +159,32 @@ export function MarketBoard({ eventId }: { eventId: string }) {
                       <ShieldCheck className="h-3 w-3" /> Evidence-backed
                     </span>
                   )}
+                  {r.agreement === 'AGREE_FOR' && (
+                    <span
+                      title="Both teams' records lean towards this: one side's own record and what the other side lets opponents do (or, for match totals, both teams' matches)."
+                      className="rounded-oracle-full bg-lift-pos/15 px-2 py-0.5 text-caption font-semibold text-lift-strong"
+                    >
+                      Both sides agree
+                    </span>
+                  )}
+                  {r.agreement === 'SPLIT' && (
+                    <span
+                      title="One side's record leans towards this and the other's leans away from it."
+                      className="rounded-oracle-full bg-warm-sand px-2 py-0.5 text-caption font-semibold text-txt-secondary"
+                    >
+                      Sides disagree
+                    </span>
+                  )}
                 </p>
                 <p className="mt-0.5 text-caption text-txt-tertiary">{r.subject}</p>
+                {r.evidence.length > 1 && (
+                  <p className="mt-0.5 text-caption text-txt-secondary">
+                    {r.evidence
+                      .filter((e) => e.played > 0)
+                      .map((e) => `${e.label} ${e.wins}/${e.played}`)
+                      .join(' · ')}
+                  </p>
+                )}
               </div>
 
               <div className="shrink-0 text-right">

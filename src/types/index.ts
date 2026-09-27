@@ -409,6 +409,8 @@ export interface BoardRow {
   currentRun: number;
   evidence: Array<{ label: string; wins: number; played: number }>;
   gated: boolean;
+  /** Whether both sides' records lean the same way on this market. */
+  agreement?: 'AGREE_FOR' | 'AGREE_AGAINST' | 'SPLIT' | null;
 }
 
 export interface BoardResponse {

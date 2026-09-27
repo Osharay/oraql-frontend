@@ -112,6 +112,9 @@ function FixtureLine({ fixture, teamId }: { fixture: NextFixture; teamId?: strin
           )}
         </p>
       )}
+      <p className="mt-1 text-caption font-medium text-oracle-gold-dark">
+        Every market for this match, and where both sides agree →
+      </p>
     </Link>
   );
 }
