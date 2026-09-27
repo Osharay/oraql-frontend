@@ -215,6 +215,12 @@ export interface StreakCandidate {
     /** Set when the team changed league: the record is this season only. */
     leagueChanged?: boolean;
     currentSeasonOnly?: number;
+    /** Weighted recent form: recent matches count most, pulled towards the long record. */
+    formRate?: number;
+    /** The last fifteen matches in this slice. */
+    recent?: { wins: number; played: number };
+    /** Strong in recent matches alone, though two seasons do not show it. */
+    emerging?: boolean;
   } | null;
   sampleSize: number;
   wins: number;

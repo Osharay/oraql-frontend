@@ -8,7 +8,13 @@ import { StreakCard } from '@/components/streaks/StreakCard';
 import { EmptyState } from '@/components/streaks/EmptyState';
 import { cn } from '@/lib/utils';
 
-type Tier = 'significant' | 'suggestive';
+type Tier = 'significant' | 'emerging' | 'suggestive';
+
+const TIER_LABEL: Record<Tier, string> = {
+  significant: 'Evidence-backed',
+  emerging: 'Emerging',
+  suggestive: 'Exploratory',
+};
 
 export default function StreaksPage() {
   const [tier, setTier] = useState<Tier>('significant');
@@ -45,7 +51,7 @@ export default function StreaksPage() {
       </header>
 
       <div className="mb-6 flex gap-2">
-        {(['significant', 'suggestive'] as Tier[]).map((t) => (
+        {(['significant', 'emerging', 'suggestive'] as Tier[]).map((t) => (
           <button
             key={t}
             onClick={() => setTier(t)}
@@ -56,10 +62,18 @@ export default function StreaksPage() {
                 : 'border-warm-stone bg-warm-cream text-txt-tertiary hover:text-txt-secondary',
             )}
           >
-            {t === 'significant' ? 'Evidence-backed' : 'Exploratory'}
+            {TIER_LABEL[t]}
           </button>
         ))}
       </div>
+
+      {tier === 'emerging' && (
+        <p className="mb-5 rounded-oracle-sm border border-warm-stone bg-warm-cream px-4 py-3 text-body-sm text-txt-secondary">
+          Strong over the last fifteen matches, though two seasons do not show it yet. A run
+          like this can be the start of something or a hot spell — OraQL records how these
+          settle, so treat them as leads to check, not evidence.
+        </p>
+      )}
 
       {tier === 'suggestive' && (
         <p className="mb-5 rounded-oracle-sm border border-warm-stone bg-warm-cream px-4 py-3 text-body-sm text-txt-secondary">
@@ -90,12 +104,16 @@ export default function StreaksPage() {
           title={
             tier === 'significant'
               ? 'No streak cleared the bar today'
-              : 'Nothing to explore yet'
+              : tier === 'emerging'
+                ? 'No recent run stands out today'
+                : 'Nothing to explore yet'
           }
           body={
             tier === 'significant'
               ? 'Every pattern found was within what these markets do anyway. That is the engine working, not failing.'
-              : 'No pattern is currently leaning far enough above its baseline to be worth a look.'
+              : tier === 'emerging'
+                ? 'No team’s last fifteen matches stand far enough above the usual rate to flag.'
+                : 'No pattern is currently leaning far enough above its baseline to be worth a look.'
           }
           detail={
             tested
@@ -112,7 +130,7 @@ export default function StreaksPage() {
           </p>
           <div className="space-y-4">
             {candidates.map((c) => (
-              <StreakCard key={c.id} candidate={c} suggestive={tier === 'suggestive'} />
+              <StreakCard key={c.id} candidate={c} suggestive={tier !== 'significant'} />
             ))}
           </div>
         </>

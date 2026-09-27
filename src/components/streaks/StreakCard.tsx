@@ -191,8 +191,13 @@ export function StreakCard({
   const pct = (v: number) => `${Math.round(v * 100)}%`;
   // Below half, it fails more often than it lands. Still a real finding about
   // the team — but a tendency to know, not a selection to back.
-  const tendency = candidate.hitRate < 0.5;
   const season = candidate.thisSeason;
+  const recent = candidate.context?.recent;
+  const formRate = candidate.context?.formRate ?? null;
+  // Recent form leads, the long record behind it: the price follows form.
+  const chance = formRate ?? candidate.hitRate;
+  const tendency = chance < 0.5;
+  const emerging = !candidate.survivedGate && candidate.context?.emerging;
 
   return (
     <article
@@ -232,12 +237,22 @@ export function StreakCard({
           <p className="mt-2 text-body font-semibold text-txt-primary">
             Happens in {pct(candidate.hitRate)} of their matches
           </p>
-          {!tendency && minimumOddsCopy(candidate.hitRate) && (
+          {!tendency && minimumOddsCopy(chance) && (
             <p
               className="mt-0.5 text-body-sm font-medium text-oracle-gold-dark"
-              title="Break-even is 1 ÷ the chance; this adds a 10% margin because the chance is an estimate. Compare it with the bookie's price."
+              title="Break-even is 1 ÷ the chance (recent form, weighted); this adds a 10% margin because the chance is an estimate. Compare it with the bookie's price."
             >
-              {minimumOddsCopy(candidate.hitRate)}
+              {minimumOddsCopy(chance)}
+            </p>
+          )}
+          {recent && recent.played > 0 && (
+            <p className="mt-0.5 text-body-sm text-txt-secondary">
+              Last {recent.played}: {recent.wins} of {recent.played} ({pct(recent.wins / recent.played)})
+              {formRate != null && (
+                <span className="text-txt-tertiary">
+                  {' · '}recent form {pct(formRate)}
+                </span>
+              )}
             </p>
           )}
           <p className="mt-0.5 text-body-sm text-txt-tertiary">
@@ -269,6 +284,14 @@ export function StreakCard({
               Tendency, not a pick
             </span>
           )}
+          {emerging && (
+            <span
+              title="Strong over the last fifteen matches, though two seasons do not show it yet. Tracked before it is trusted."
+              className="rounded-oracle-full bg-oracle-gold/15 px-2.5 py-1 text-caption font-semibold text-oracle-gold-dark"
+            >
+              Emerging — recent form
+            </span>
+          )}
         </div>
       </div>
 
@@ -285,7 +308,7 @@ export function StreakCard({
 
       {tendency && (
         <p className="mt-3 rounded-oracle-sm bg-warm-cream px-3 py-2 text-body-sm text-txt-secondary">
-          Less likely than not: it fails in {pct(1 - candidate.hitRate)} of their matches. What
+          Less likely than not: on recent form it fails about {pct(1 - chance)} of the time. What
           stands out is that it happens {(candidate.hitRate / candidate.baselineRate).toFixed(1)}×
           as often as for a typical side.
         </p>
