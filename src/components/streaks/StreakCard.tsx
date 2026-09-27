@@ -6,7 +6,7 @@ import { ChevronDown } from 'lucide-react';
 import type { NextFixture, StreakCandidate } from '@/types';
 import { ResultStrip } from './ResultStrip';
 import { LiftMeter } from './LiftMeter';
-import { cn } from '@/lib/utils';
+import { cn, minimumOddsCopy } from '@/lib/utils';
 
 const STATUS_COPY: Record<string, { label: string; className: string }> = {
   NEW: { label: 'New', className: 'bg-oracle-gold/15 text-oracle-gold-dark' },
@@ -141,6 +141,14 @@ export function StreakCard({
           <p className="mt-2 text-body font-semibold text-txt-primary">
             Happens in {pct(candidate.hitRate)} of their matches
           </p>
+          {!tendency && minimumOddsCopy(candidate.hitRate) && (
+            <p
+              className="mt-0.5 text-body-sm font-medium text-oracle-gold-dark"
+              title="Break-even is 1 ÷ the chance; this adds a 10% margin because the chance is an estimate. Compare it with the bookie's price."
+            >
+              {minimumOddsCopy(candidate.hitRate)}
+            </p>
+          )}
           <p className="mt-0.5 text-body-sm text-txt-tertiary">
             {venuePhrase(venue)}
             {' · '}

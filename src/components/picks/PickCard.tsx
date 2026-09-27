@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Star, ChevronDown, ChevronUp, Plus, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, minimumOddsCopy } from '@/lib/utils';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { Button } from '@/components/ui/Button';
 import {
@@ -99,6 +99,17 @@ export function PickCard({
         isDark ? 'text-txt-inverse-2' : 'text-txt-secondary',
       )}>
         {probabilityPhrase(pick.probability)}.
+        {minimumOddsCopy(pick.probability) && (
+          <>
+            {' '}
+            <span
+              className={cn('font-medium', isDark ? 'text-oracle-gold' : 'text-oracle-gold-dark')}
+              title="Break-even is 1 ÷ the chance; this adds a 10% margin because the chance is an estimate. Compare it with the bookie's price."
+            >
+              {minimumOddsCopy(pick.probability)}.
+            </span>
+          </>
+        )}
       </p>
 
       {/* How much evidence sits behind the number. Without this a figure built

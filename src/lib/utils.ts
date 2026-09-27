@@ -133,3 +133,21 @@ export function formatCategory(category: string): string {
   };
   return labels[category] || category;
 }
+
+/**
+ * The lowest decimal odds worth taking for a given chance.
+ *
+ * Break-even is 1 / chance: an 80% shot pays over time only above 1.25. The
+ * margin (10% by default) allows for the chance itself being an estimate, so
+ * an 80% shot is worth backing from about 1.38. Returns null where the chance
+ * is too low to call a pick, or not a number.
+ */
+export function minimumOdds(chance: number, margin = 0.1): number | null {
+  if (!Number.isFinite(chance) || chance < 0.5 || chance >= 1) return null;
+  return Math.ceil(((1 + margin) / chance) * 100) / 100;
+}
+
+export function minimumOddsCopy(chance: number): string | null {
+  const odds = minimumOdds(chance);
+  return odds == null ? null : `Worth backing at ${odds.toFixed(2)} or higher`;
+}
