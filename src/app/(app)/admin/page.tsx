@@ -508,6 +508,17 @@ export default function AdminPage() {
             variant="secondary"
             size="sm"
             disabled={busy}
+            title="One-off: gives every match and observation its own season. Run once, then Compute baselines and Run engine. Safe to repeat."
+            onClick={() =>
+              run('seasons', 'Repair match seasons', () => job('/streaks/seasons/repair'))
+            }
+          >
+            Repair match seasons (one-off)
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy}
             onClick={() =>
               run('derive', 'Derive observations', () =>
                 job('/streaks/observations/derive'),
