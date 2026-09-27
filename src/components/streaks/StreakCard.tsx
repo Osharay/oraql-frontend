@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
-import type { NextFixture, StreakCandidate } from '@/types';
+import type { NextFixture, OpponentBand, OpponentSplit, StreakCandidate } from '@/types';
 import { ResultStrip } from './ResultStrip';
 import { LiftMeter } from './LiftMeter';
 import { cn, minimumOddsCopy } from '@/lib/utils';
@@ -113,6 +113,63 @@ function FixtureLine({ fixture, teamId }: { fixture: NextFixture; teamId?: strin
         </p>
       )}
     </Link>
+  );
+}
+
+const BAND_COPY: Record<OpponentBand, { label: string; key: 'stronger' | 'similar' | 'weaker' }> = {
+  STRONGER: { label: 'stronger sides', key: 'stronger' },
+  SIMILAR: { label: 'similar sides', key: 'similar' },
+  WEAKER: { label: 'weaker sides', key: 'weaker' },
+};
+
+/** Below this, a band's rate is shown but flagged as thin. */
+const THIN = 5;
+
+/**
+ * The record against stronger, similar and weaker opponents, with the band
+ * the next opponent falls in called out — so a run built on weak sides does
+ * not read as a forecast against a strong one.
+ */
+function OpponentSplitLine({ split }: { split: OpponentSplit }) {
+  const bands: OpponentBand[] = ['STRONGER', 'SIMILAR', 'WEAKER'];
+  const rated = bands.reduce((n, b) => n + split[BAND_COPY[b].key].played, 0);
+  if (rated === 0) return null;
+  const pct = (r: { wins: number; played: number }) => Math.round((r.wins / r.played) * 100);
+  const next = split.next ? split[BAND_COPY[split.next].key] : null;
+
+  return (
+    <div className="mt-3 rounded-oracle-sm border border-warm-sand px-3 py-2 text-body-sm">
+      {split.next && next && next.played > 0 && (
+        <p className="mb-1 text-txt-primary">
+          Next opponent is one of the{' '}
+          <span className="font-semibold">{BAND_COPY[split.next].label}</span>. Against those it came
+          off{' '}
+          <span className="font-semibold">
+            {next.wins} of {next.played} times ({pct(next)}%)
+          </span>
+          {next.played < THIN && <span className="text-txt-tertiary"> — few matches, treat as a hint</span>}
+          .
+        </p>
+      )}
+      {split.next && next && next.played === 0 && (
+        <p className="mb-1 text-txt-primary">
+          Next opponent is one of the <span className="font-semibold">{BAND_COPY[split.next].label}</span>
+          , and there is no record against those yet.
+        </p>
+      )}
+      <p className="flex flex-wrap gap-x-3 text-txt-tertiary">
+        <span>By opponent strength:</span>
+        {bands.map((b) => {
+          const r = split[BAND_COPY[b].key];
+          if (r.played === 0) return null;
+          return (
+            <span key={b} className={b === split.next ? 'font-semibold text-txt-primary' : undefined}>
+              vs {BAND_COPY[b].label.replace(' sides', '')} {r.wins}/{r.played}
+            </span>
+          );
+        })}
+      </p>
+    </div>
   );
 }
 
@@ -229,6 +286,10 @@ export function StreakCard({
           stands out is that it happens {(candidate.hitRate / candidate.baselineRate).toFixed(1)}×
           as often as for a typical side.
         </p>
+      )}
+
+      {candidate.opponentSplit && (
+        <OpponentSplitLine split={candidate.opponentSplit} />
       )}
 
       <div className="mt-4">

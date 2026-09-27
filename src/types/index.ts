@@ -247,6 +247,19 @@ export interface StreakCandidate {
   subject?: MarketSubject;
   /** The team's next fixture: the match this card is about. */
   nextFixture?: NextFixture | null;
+  /** The same record split by how strong the opponent was at the time. */
+  opponentSplit?: OpponentSplit | null;
+}
+
+export type OpponentBand = 'STRONGER' | 'SIMILAR' | 'WEAKER';
+
+export interface OpponentSplit {
+  stronger: { wins: number; played: number };
+  similar: { wins: number; played: number };
+  weaker: { wins: number; played: number };
+  unrated: number;
+  /** The next opponent's band, when both sides are rated. */
+  next?: OpponentBand | null;
 }
 
 export interface NextFixture {
