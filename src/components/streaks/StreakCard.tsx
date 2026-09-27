@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
-import type { StreakCandidate } from '@/types';
+import type { NextFixture, StreakCandidate } from '@/types';
 import { ResultStrip } from './ResultStrip';
 import { LiftMeter } from './LiftMeter';
 import { cn } from '@/lib/utils';
@@ -39,6 +39,50 @@ function coincidenceCopy(adjusted?: number | null): { value: string; note: strin
     value,
     note: `Of patterns flagged like this one, about ${value} are expected to be coincidence.`,
   };
+}
+
+/** "Sat 10 Oct, 15:00" in the reader's own time zone. */
+function kickoffCopy(iso: string): string {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return `${day}, ${time}`;
+}
+
+/**
+ * The match the card is about, home side on the left, so a reader can go
+ * straight to the bookie without looking the fixture up.
+ */
+function FixtureLine({ fixture, teamId }: { fixture: NextFixture; teamId?: string }) {
+  const side = (t: { id: string; name: string }) => (
+    <span className={t.id === teamId ? 'font-semibold text-txt-primary' : 'text-txt-secondary'}>
+      {t.name}
+    </span>
+  );
+  const where = [fixture.competition.name, fixture.competition.country].filter(Boolean).join(' · ');
+  return (
+    <Link
+      href={`/events/${fixture.eventId}`}
+      className="mt-3 block rounded-oracle-sm border border-warm-sand bg-warm-cream/60 px-3 py-2 transition-colors duration-normal hover:border-warm-stone"
+    >
+      <p className="flex flex-wrap items-center gap-x-2 text-body">
+        {side(fixture.home)}
+        <span className="text-txt-tertiary">vs</span>
+        {side(fixture.away)}
+        <span className="rounded-oracle-full bg-white px-2 py-0.5 text-caption font-semibold text-txt-secondary">
+          {fixture.isHome ? 'Home' : 'Away'}
+        </span>
+      </p>
+      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-body-sm text-txt-tertiary">
+        <span>{kickoffCopy(fixture.kickoffAt)}</span>
+        <span>·</span>
+        <span>{where}</span>
+        <span className="rounded-oracle-full bg-white px-2 py-0.5 text-caption font-semibold text-txt-secondary">
+          {fixture.competition.kind === 'CUP' ? 'Cup' : 'League'}
+        </span>
+      </p>
+    </Link>
+  );
 }
 
 export function StreakCard({
@@ -128,6 +172,10 @@ export function StreakCard({
           )}
         </div>
       </div>
+
+      {candidate.nextFixture && (
+        <FixtureLine fixture={candidate.nextFixture} teamId={candidate.entity?.id} />
+      )}
 
       {candidate.context?.leagueChanged && (
         <p className="mt-3 rounded-oracle-sm bg-warm-cream px-3 py-2 text-body-sm text-txt-secondary">

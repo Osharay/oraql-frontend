@@ -245,6 +245,23 @@ export interface StreakCandidate {
   /** The market named for the club it applies to. */
   marketLabel?: string;
   subject?: MarketSubject;
+  /** The team's next fixture: the match this card is about. */
+  nextFixture?: NextFixture | null;
+}
+
+export interface NextFixture {
+  eventId: string;
+  kickoffAt: string;
+  home: { id: string; name: string };
+  away: { id: string; name: string };
+  /** Whether the card's team is the home side. */
+  isHome: boolean;
+  competition: {
+    name: string;
+    country: string | null;
+    kind: 'LEAGUE' | 'CUP';
+    round: string | null;
+  };
 }
 
 export interface CandidatesResponse {
