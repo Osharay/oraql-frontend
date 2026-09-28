@@ -281,6 +281,12 @@ export interface NextFixture {
     kind: 'LEAGUE' | 'CUP';
     round: string | null;
   };
+  /** Who is missing on each side, from the card's team's point of view. */
+  availability?: {
+    own: Availability | null;
+    opponent: Availability | null;
+    verdict: AbsenceVerdict | null;
+  } | null;
   /** Who is stronger going in, from team ratings. Null until both are rated. */
   strength?: {
     home: { rating: number; tier: 'STRONG' | 'AVERAGE' | 'WEAK' | null };
@@ -417,6 +423,8 @@ export interface BoardRow {
   gated: boolean;
   /** Whether both sides' records lean the same way on this market. */
   agreement?: 'AGREE_FOR' | 'AGREE_AGAINST' | 'SPLIT' | null;
+  /** Key players missing, and whether that works against this row or for it. */
+  absence?: AbsenceVerdict | null;
 }
 
 export interface BoardResponse {
@@ -428,6 +436,8 @@ export interface BoardResponse {
     home: { id: string; name: string };
     away: { id: string; name: string };
   };
+  /** Who is missing on each side; a side is null until it has been checked. */
+  availability?: { home: Availability | null; away: Availability | null };
   sort: string;
   markets: number;
   /** Rows with at least `evidenceFloor` settled matches behind them. */
@@ -437,4 +447,31 @@ export interface BoardResponse {
   lookbackDays: number;
   caveat: string;
   rows: BoardRow[];
+}
+
+// ─── Player availability ───
+
+export interface MissingPlayer {
+  playerId: string;
+  name: string;
+  status: string;
+  reason: string | null;
+  /** Share of the team's goals plus half its assists this season; null when unknown. */
+  share: number | null;
+  /** ABSENT: injured or suspended. BENCHED: fit but not in the confirmed XI. */
+  kind: 'ABSENT' | 'BENCHED';
+}
+
+export interface Availability {
+  level: 'NONE' | 'MINOR' | 'MAJOR' | 'UNKNOWN';
+  lostShare: number;
+  missing: MissingPlayer[];
+  lineupConfirmed: boolean;
+  statsKnown: boolean;
+}
+
+/** Whether absences work against a pick (HURTS) or for it (HELPS). */
+export interface AbsenceVerdict {
+  effect: 'HURTS' | 'HELPS';
+  level: 'MAJOR' | 'MINOR';
 }

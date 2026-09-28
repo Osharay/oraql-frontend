@@ -519,6 +519,17 @@ export default function AdminPage() {
             variant="secondary"
             size="sm"
             disabled={busy}
+            title="Who scores for each club playing in the next 3 days, and each fixture's injuries and suspensions. Runs by itself at 06:20 and 14:20 UTC."
+            onClick={() =>
+              run('availability', 'Refresh player availability', () => job('/streaks/availability/refresh'))
+            }
+          >
+            Refresh player availability
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy}
             onClick={() =>
               run('derive', 'Derive observations', () =>
                 job('/streaks/observations/derive'),

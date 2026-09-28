@@ -5,6 +5,7 @@ import { Loader2, ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { ResultStrip } from './ResultStrip';
+import { AbsenceBadge, AvailabilityLine, worthShowing } from './AvailabilityNote';
 import type { BoardResponse, BoardRow } from '@/types';
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
@@ -140,6 +141,14 @@ export function MarketBoard({ eventId }: { eventId: string }) {
         )}
       </div>
 
+      {worthShowing(data.availability?.home ?? null) || worthShowing(data.availability?.away ?? null) ? (
+        <div className="mb-4 space-y-1 rounded-oracle-sm border border-warm-stone bg-white px-4 py-3">
+          <p className="text-caption font-semibold uppercase tracking-wide text-txt-tertiary">Missing</p>
+          <AvailabilityLine team={data.event.home.name} availability={data.availability?.home ?? null} />
+          <AvailabilityLine team={data.event.away.name} availability={data.availability?.away ?? null} />
+        </div>
+      ) : null}
+
       <p className="mb-4 rounded-oracle-sm border border-warm-stone bg-warm-cream px-4 py-3 text-caption text-txt-secondary">
         {data.caveat}
       </p>
@@ -167,6 +176,7 @@ export function MarketBoard({ eventId }: { eventId: string }) {
                       Both sides agree
                     </span>
                   )}
+                  <AbsenceBadge verdict={r.absence} />
                   {r.agreement === 'SPLIT' && (
                     <span
                       title="One side's record leans towards this and the other's leans away from it."

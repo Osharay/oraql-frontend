@@ -7,6 +7,7 @@ import type { NextFixture, OpponentBand, OpponentSplit, StreakCandidate } from '
 import { ResultStrip } from './ResultStrip';
 import { LiftMeter } from './LiftMeter';
 import { cn, minimumOddsCopy } from '@/lib/utils';
+import { AbsenceBadge, AvailabilityLine, worthShowing } from './AvailabilityNote';
 
 const STATUS_COPY: Record<string, { label: string; className: string }> = {
   NEW: { label: 'New', className: 'bg-oracle-gold/15 text-oracle-gold-dark' },
@@ -112,6 +113,20 @@ function FixtureLine({ fixture, teamId }: { fixture: NextFixture; teamId?: strin
           )}
         </p>
       )}
+      {fixture.availability &&
+      (fixture.availability.verdict || worthShowing(fixture.availability.own) || worthShowing(fixture.availability.opponent)) ? (
+        <div className="mt-2 space-y-1 border-t border-warm-sand pt-2">
+          <AbsenceBadge verdict={fixture.availability.verdict} />
+          <AvailabilityLine
+            team={fixture.isHome ? fixture.home.name : fixture.away.name}
+            availability={fixture.availability.own}
+          />
+          <AvailabilityLine
+            team={fixture.isHome ? fixture.away.name : fixture.home.name}
+            availability={fixture.availability.opponent}
+          />
+        </div>
+      ) : null}
       <p className="mt-1 text-caption font-medium text-oracle-gold-dark">
         Every market for this match, and where both sides agree →
       </p>
