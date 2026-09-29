@@ -530,6 +530,15 @@ export default function AdminPage() {
             variant="secondary"
             size="sm"
             disabled={busy}
+            title="Re-reads every unplayed fixture in the next two weeks, so moved and postponed matches show their real date. Runs by itself at 04:40 and 12:40 UTC."
+            onClick={() => run('fixtures', 'Refresh fixture dates', () => job('/streaks/fixtures/refresh'))}
+          >
+            Refresh fixture dates
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy}
             onClick={() =>
               run('derive', 'Derive observations', () =>
                 job('/streaks/observations/derive'),
