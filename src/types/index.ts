@@ -327,14 +327,19 @@ export interface ClusterComponent {
     currentStreak: number;
     result?: { result: 'WIN' | 'LOSS' | 'VOID' | 'UNKNOWN' } | null;
     event: {
+      id?: string;
       kickoffAt: string;
-      homeTeam: { name: string; shortName?: string };
-      awayTeam: { name: string; shortName?: string };
-      league: { name: string };
+      homeTeam: { id?: string; name: string; shortName?: string };
+      awayTeam: { id?: string; name: string; shortName?: string };
+      league: { name: string; country?: string | null };
     };
     streakCandidate: {
       selection: 'HOME' | 'AWAY' | 'MATCH' | null;
       entityId: string;
+      entityType?: string;
+      wins?: number;
+      last10?: string | null;
+      context?: StreakCandidate['context'];
       marketDefinition: MarketDefinitionSummary;
     };
   };
