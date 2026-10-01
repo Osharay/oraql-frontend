@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import type { Cluster, ClusterComponent } from '@/types';
 import { cn, minimumOddsCopy } from '@/lib/utils';
+import { useBuilderStore } from '@/stores/builder.store';
 import { ResultStrip } from './ResultStrip';
+import { AddStreakToBuilder } from '@/components/builder/AddStreakToBuilder';
 
 /**
  * A cluster gathers independently strong streaks from unrelated events,
@@ -92,6 +94,8 @@ export function ClusterCard({ cluster }: { cluster: Cluster }) {
           <ClusterRow key={c.id} component={c} />
         ))}
       </ul>
+
+      <AddClusterToBuilder cluster={cluster} />
 
       <footer className="border-t border-warm-sand px-5 py-3">
         <p className="text-caption text-txt-tertiary">
@@ -206,6 +210,16 @@ function ClusterRow({ component: c }: { component: ClusterComponent }) {
 
           {price && <p className="font-medium text-oracle-gold-dark">{price}</p>}
 
+          {!result && (
+            <AddStreakToBuilder
+              eventId={s.event.id}
+              marketId={sc.marketDefinition.marketId}
+              teamId={sc.entityType === 'TEAM' ? sc.entityId : null}
+              probability={chance}
+              kickoffAt={s.event.kickoffAt}
+            />
+          )}
+
           <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1">
             {s.event.id && (
               <Link href={`/events/${s.event.id}`} className="font-medium text-oracle-gold-dark hover:underline">
@@ -221,5 +235,51 @@ function ClusterRow({ component: c }: { component: ClusterComponent }) {
         </div>
       )}
     </li>
+  );
+}
+
+/** Every open selection in the cluster, added in one go. */
+function AddClusterToBuilder({ cluster }: { cluster: Cluster }) {
+  const addStreak = useBuilderStore((s) => s.addStreak);
+  const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');
+  const [problems, setProblems] = useState<string[]>([]);
+
+  const open = cluster.components.filter(
+    (c) => !c.snapshot.result && c.snapshot.event.id && new Date(c.snapshot.event.kickoffAt).getTime() > Date.now(),
+  );
+  if (open.length < 2) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 border-t border-warm-sand px-5 py-3">
+      <button
+        type="button"
+        disabled={state === 'busy'}
+        onClick={async () => {
+          setState('busy');
+          const failed: string[] = [];
+          for (const c of open) {
+            const s = c.snapshot;
+            const sc = s.streakCandidate;
+            const reason = await addStreak({
+              eventId: s.event.id!,
+              marketId: sc.marketDefinition.marketId,
+              teamId: sc.entityType === 'TEAM' ? sc.entityId : null,
+              probability: sc.context?.formRate ?? s.hitRate,
+            });
+            if (reason) failed.push(`${s.marketLabel || sc.marketDefinition.displayName}: ${reason}`);
+          }
+          setProblems(failed);
+          setState('done');
+        }}
+        className="inline-flex items-center gap-1.5 rounded-oracle-full bg-txt-primary px-4 py-2 text-body-sm font-semibold text-white transition-opacity duration-normal hover:opacity-90 disabled:opacity-60"
+      >
+        {state === 'busy' ? 'Adding…' : state === 'done' && problems.length === 0 ? 'All added to your Builder' : `Add all ${open.length} to Builder`}
+      </button>
+      {problems.map((p) => (
+        <p key={p} role="alert" className="w-full text-caption text-danger">
+          {p}
+        </p>
+      ))}
+    </div>
   );
 }

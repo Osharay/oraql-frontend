@@ -9,6 +9,8 @@ interface BuilderStore extends BuilderState {
   load: () => Promise<void>;
   /** Resolves to null on success, or the reason the selection was refused. */
   add: (marketId: string) => Promise<string | null>;
+  /** A streak or cluster selection: the fixture, the streak market, and whose it is. */
+  addStreak: (leg: { eventId: string; marketId: string; teamId?: string | null; probability?: number }) => Promise<string | null>;
   remove: (marketId: string) => Promise<void>;
   clear: () => Promise<void>;
   exportText: () => Promise<string>;
@@ -41,6 +43,21 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       return error instanceof Error ? error.message : 'Could not add this selection';
     }
     // Reload full state for consistency
+    await get().load();
+    return null;
+  },
+
+  addStreak: async (leg) => {
+    try {
+      await api.post('/builder/add-streak', {
+        eventId: leg.eventId,
+        marketId: leg.marketId,
+        ...(leg.teamId ? { teamId: leg.teamId } : {}),
+        ...(leg.probability != null ? { probability: leg.probability } : {}),
+      });
+    } catch (error) {
+      return error instanceof Error ? error.message : 'Could not add this selection';
+    }
     await get().load();
     return null;
   },

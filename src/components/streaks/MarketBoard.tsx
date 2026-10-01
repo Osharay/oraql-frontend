@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { ResultStrip } from './ResultStrip';
 import { AbsenceBadge, AvailabilityLine, worthShowing } from './AvailabilityNote';
+import { AddStreakToBuilder } from '@/components/builder/AddStreakToBuilder';
 import type { BoardResponse, BoardRow } from '@/types';
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
@@ -236,6 +237,14 @@ export function MarketBoard({ eventId }: { eventId: string }) {
                 {CONFIDENCE_LABEL[r.confidence]}
               </span>
             </div>
+            <AddStreakToBuilder
+              className="mt-2"
+              eventId={data.event.id}
+              marketId={r.marketId}
+              teamId={r.side === 'HOME' ? data.event.home.id : r.side === 'AWAY' ? data.event.away.id : null}
+              probability={r.probability}
+              kickoffAt={data.event.kickoffAt}
+            />
           </li>
         ))}
       </ul>

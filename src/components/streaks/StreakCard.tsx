@@ -8,6 +8,7 @@ import { ResultStrip } from './ResultStrip';
 import { LiftMeter } from './LiftMeter';
 import { cn, minimumOddsCopy } from '@/lib/utils';
 import { AbsenceBadge, AvailabilityLine, worthShowing } from './AvailabilityNote';
+import { AddStreakToBuilder } from '@/components/builder/AddStreakToBuilder';
 
 const STATUS_COPY: Record<string, { label: string; className: string }> = {
   NEW: { label: 'New', className: 'bg-oracle-gold/15 text-oracle-gold-dark' },
@@ -312,6 +313,16 @@ export function StreakCard({
 
       {candidate.nextFixture && (
         <FixtureLine fixture={candidate.nextFixture} teamId={candidate.entity?.id} />
+      )}
+      {candidate.nextFixture && candidate.entity?.type === 'TEAM' && (
+        <AddStreakToBuilder
+          className="mt-2"
+          eventId={candidate.nextFixture.eventId}
+          marketId={candidate.marketDefinition.marketId}
+          teamId={candidate.entity.id}
+          probability={chance}
+          kickoffAt={candidate.nextFixture.kickoffAt}
+        />
       )}
 
       {candidate.context?.leagueChanged && (
