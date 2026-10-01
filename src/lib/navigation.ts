@@ -39,6 +39,16 @@ function write(key: string, value: unknown) {
   }
 }
 
+/**
+ * Note a Back as early as possible. The router handles popstate itself and can
+ * render the previous page before a listener added later runs, so this one is
+ * registered when the module loads, in the capture phase, which browsers run
+ * before ordinary listeners on the window.
+ */
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', () => write(POP_KEY, true), { capture: true });
+}
+
 export function currentUrl(): string {
   return typeof window === 'undefined' ? '' : window.location.pathname + window.location.search;
 }

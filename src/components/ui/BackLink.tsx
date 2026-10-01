@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { backLabel, previousUrl } from '@/lib/navigation';
+import { backLabel, markPop, previousUrl } from '@/lib/navigation';
 
 /**
  * Back to wherever the reader came from — the same tab, filter and scroll
@@ -19,7 +19,11 @@ export function BackLink({ fallbackHref, fallbackLabel }: { fallbackHref: string
       href={prev ?? fallbackHref}
       onClick={(e) => {
         e.preventDefault();
-        if (prev) router.back();
+        if (prev) {
+          // Known to be a Back: say so before the router renders the page.
+          markPop(true);
+          router.back();
+        }
         else router.push(fallbackHref);
       }}
       className="inline-flex items-center gap-2 text-body-sm text-txt-secondary transition-colors hover:text-txt-primary"

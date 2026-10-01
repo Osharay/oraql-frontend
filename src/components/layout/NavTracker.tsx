@@ -10,12 +10,6 @@ export function NavTracker() {
   const search = useSearchParams();
 
   useEffect(() => {
-    const onPop = () => markPop(true);
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, []);
-
-  useEffect(() => {
     const q = search?.toString();
     recordVisit(pathname + (q ? `?${q}` : ''));
     // The pop flag is read by the page's scroll memory on this same render
