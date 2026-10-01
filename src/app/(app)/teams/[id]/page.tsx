@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
+import { BackLink } from '@/components/ui/BackLink';
+import { useScrollMemory } from '@/hooks/useScrollMemory';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { FormRow } from '@/components/streaks/FormRow';
@@ -53,6 +54,8 @@ export default function TeamFormPage() {
   const [group, setGroup] = useState('all');
   const [data, setData] = useState<TeamFormResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  // Back to this page lands where the reader was.
+  useScrollMemory(!loading);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -83,13 +86,9 @@ export default function TeamFormPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
-      <Link
-        href="/streaks"
-        className="mb-6 inline-flex items-center gap-2 text-body-sm text-txt-secondary transition-colors hover:text-txt-primary"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Streaks
-      </Link>
+      <div className="mb-6">
+        <BackLink fallbackHref="/streaks" fallbackLabel="Back to Streaks" />
+      </div>
 
       <header className="mb-6">
         <h1 className="font-display text-display-md text-txt-primary">

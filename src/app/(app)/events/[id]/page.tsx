@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { BackLink } from '@/components/ui/BackLink';
+import { useScrollMemory } from '@/hooks/useScrollMemory';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Star, Clock, MapPin } from 'lucide-react';
+import { Star, Clock, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { cn, formatKickoff, formatCategory } from '@/lib/utils';
 import { PickCard } from '@/components/picks/PickCard';
@@ -23,6 +25,8 @@ export default function EventDetailPage() {
   const [activeCategory, setActiveCategory] = useState<MarketCategory | 'ALL'>('ALL');
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Back to this page lands where the reader was.
+  useScrollMemory(!isLoading);
   const addToBuilder = useBuilderStore((s) => s.add);
   const [addError, setAddError] = useState<string | null>(null);
 
@@ -68,15 +72,9 @@ export default function EventDetailPage() {
 
   return (
     <div className="space-y-8">
-      {/* ─── Back to Dashboard Link ─── */}
+      {/* ─── Back to wherever the reader came from ─── */}
       <div className="px-6 pt-6">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-body-sm text-txt-secondary hover:text-txt-primary transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Link>
+        <BackLink fallbackHref="/dashboard" fallbackLabel="Back to Dashboard" />
       </div>
 
       {/* ─── Event Header (Warm Cream Surface with Decorative V) ─── */}

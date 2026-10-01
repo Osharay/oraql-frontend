@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useScrollMemory } from '@/hooks/useScrollMemory';
 import { Star, Filter, Sparkles } from 'lucide-react';
 import { PickCard } from '@/components/picks/PickCard';
 import { api } from '@/lib/api';
@@ -11,6 +12,8 @@ export default function PicksPage() {
   const [sport, setSport] = useState<Sport>('FOOTBALL');
   const [minProb, setMinProb] = useState(0.55);
   const [isLoading, setIsLoading] = useState(true);
+  // Back to this page lands where the reader was.
+  useScrollMemory(!isLoading);
 
   useEffect(() => {
     loadPicks();

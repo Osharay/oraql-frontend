@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useScrollMemory } from '@/hooks/useScrollMemory';
 import { Star, TrendingUp, Zap, BarChart3 } from 'lucide-react';
 import { TopBar } from '@/components/layout/TopBar';
 import { EventCard } from '@/components/events/EventCard';
@@ -14,6 +15,8 @@ export default function DashboardPage() {
   const [topPicks, setTopPicks] = useState<Pick[]>([]);
   const [sportCounts, setSportCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
+  // Back to this page lands where the reader was.
+  useScrollMemory(!isLoading);
 
   useEffect(() => {
     loadData();

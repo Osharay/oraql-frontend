@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { Suspense, useCallback, useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileHeader } from '@/components/layout/MobileHeader';
 import { BuilderBar } from '@/components/builder/BuilderBar';
 import { AuthGuard } from '@/components/layout/AuthGuard';
+import { NavTracker } from '@/components/layout/NavTracker';
 
 export default function AppLayout({
   children,
@@ -16,6 +17,9 @@ export default function AppLayout({
 
   return (
     <AuthGuard>
+      <Suspense fallback={null}>
+        <NavTracker />
+      </Suspense>
       {/* min-w-0 lets the main column shrink below its content's intrinsic
           width instead of pushing the page sideways — a flex child defaults
           to min-width:auto, which is where most of the horizontal scrolling

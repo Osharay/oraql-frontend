@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useScrollMemory } from '@/hooks/useScrollMemory';
 import { Layers, Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { ClustersResponse } from '@/types';
@@ -10,6 +11,8 @@ import { EmptyState } from '@/components/streaks/EmptyState';
 export default function ClustersPage() {
   const [data, setData] = useState<ClustersResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  // Back to this page lands where the reader was.
+  useScrollMemory(!loading);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

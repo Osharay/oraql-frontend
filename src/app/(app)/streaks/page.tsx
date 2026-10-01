@@ -1,6 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { replaceCurrent } from '@/lib/navigation';
+import { useScrollMemory } from '@/hooks/useScrollMemory';
 import { SearchX, Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { CandidatesResponse } from '@/types';
@@ -16,11 +19,33 @@ const TIER_LABEL: Record<Tier, string> = {
   suggestive: 'Exploratory',
 };
 
+const TIERS: Tier[] = ['significant', 'emerging', 'suggestive'];
+
 export default function StreaksPage() {
-  const [tier, setTier] = useState<Tier>('significant');
+  // useSearchParams needs a Suspense boundary in the app router.
+  return (
+    <Suspense fallback={null}>
+      <StreaksView />
+    </Suspense>
+  );
+}
+
+function StreaksView() {
+  const router = useRouter();
+  const params = useSearchParams();
+  // The tab lives in the URL (?tier=emerging), so Back returns to it.
+  const fromUrl = params?.get('tier') as Tier | null;
+  const tier: Tier = fromUrl && TIERS.includes(fromUrl) ? fromUrl : 'significant';
+  const setTier = (t: Tier) => {
+    const url = t === 'significant' ? '/streaks' : `/streaks?tier=${t}`;
+    router.replace(url, { scroll: false });
+    replaceCurrent(url);
+  };
   const [data, setData] = useState<CandidatesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Back to this page lands where the reader was.
+  useScrollMemory(!loading);
 
   useEffect(() => {
     let cancelled = false;
