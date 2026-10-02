@@ -54,7 +54,7 @@ function StreaksView() {
     setError(null);
 
     api
-      .get<CandidatesResponse>(`/streaks/candidates?tier=${tier}&limit=50`)
+      .get<CandidatesResponse>(`/streaks/candidates?tier=${tier}&limit=100`)
       .then((res) => !cancelled && setData(res))
       .catch((e) => !cancelled && setError(e?.message ?? 'Could not load streaks'))
       .finally(() => !cancelled && setLoading(false));
@@ -171,8 +171,7 @@ function StreaksView() {
 
 /**
  * Streaks gathered under the match they are for, so every pick on one event
- * sits together under its teams. Groups keep the engine's order (strongest
- * first, by each match's best streak); streaks with no upcoming match go last.
+ * sits together under its teams, matches in kickoff order (soonest first).
  */
 function groupByMatch(candidates: StreakCandidate[]) {
   type Group = {
@@ -195,9 +194,10 @@ function groupByMatch(candidates: StreakCandidate[]) {
     g.items.push(c);
     groups.set(key, g);
   }
-  const list = [...groups.values()];
-  const none = list.filter((g) => g.key === 'none');
-  return [...list.filter((g) => g.key !== 'none'), ...none];
+  // Soonest kickoff first; streaks with no upcoming match go last. Within a
+  // match the engine's order stands, strongest first.
+  const kickoff = (g: Group) => (g.fixture ? new Date(g.fixture.kickoffAt).getTime() : Infinity);
+  return [...groups.values()].sort((a, b) => kickoff(a) - kickoff(b));
 }
 
 /** How many of a match's streaks show before "Show more". */
