@@ -156,27 +156,7 @@ function StreaksView() {
           </p>
           <div className="space-y-8">
             {groupByMatch(candidates).map((g) => (
-              <section key={g.key} aria-label={g.title}>
-                <header className="mb-3">
-                  <h2 className="font-display text-h5 text-txt-primary">
-                    {g.title}
-                    <span className="ml-2 text-body-sm font-normal text-txt-tertiary">
-                      {g.items.length} {g.items.length === 1 ? 'streak' : 'streaks'}
-                    </span>
-                  </h2>
-                  {g.fixture && <FixtureLine fixture={g.fixture} />}
-                </header>
-                <div className="space-y-4 border-l-2 border-warm-sand pl-3 sm:pl-4">
-                  {g.items.map((c) => (
-                    <StreakCard
-                      key={c.id}
-                      candidate={c}
-                      suggestive={tier !== 'significant'}
-                      inGroup={!!c.nextFixture}
-                    />
-                  ))}
-                </div>
-              </section>
+              <MatchGroup key={g.key} group={g} suggestive={tier !== 'significant'} />
             ))}
           </div>
         </>
@@ -218,4 +198,72 @@ function groupByMatch(candidates: StreakCandidate[]) {
   const list = [...groups.values()];
   const none = list.filter((g) => g.key === 'none');
   return [...list.filter((g) => g.key !== 'none'), ...none];
+}
+
+/** How many of a match's streaks show before "Show more". */
+const SHOWN_PER_MATCH = 2;
+
+/**
+ * One match: its heading and fixture once, then its streaks. Long groups show
+ * the strongest two and fold the rest behind a button, so ten picks on one
+ * match do not push every other match off the screen.
+ */
+function MatchGroup({
+  group: g,
+  suggestive,
+}: {
+  group: ReturnType<typeof groupByMatch>[number];
+  suggestive: boolean;
+}) {
+  // Remembered for the tab, so coming back with Back finds it as it was left.
+  const memoryKey = `oraql:expanded:${g.key}`;
+  const [expanded, setExpandedState] = useState(() => {
+    try {
+      return sessionStorage.getItem(memoryKey) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const setExpanded = (next: (v: boolean) => boolean) =>
+    setExpandedState((v) => {
+      const value = next(v);
+      try {
+        sessionStorage.setItem(memoryKey, value ? '1' : '0');
+      } catch {
+        // No storage: it simply is not remembered.
+      }
+      return value;
+    });
+  const shown = expanded ? g.items : g.items.slice(0, SHOWN_PER_MATCH);
+  const hidden = g.items.length - shown.length;
+
+  return (
+    <section aria-label={g.title}>
+      <header className="mb-3">
+        <h2 className="font-display text-h5 text-txt-primary">
+          {g.title}
+          <span className="ml-2 text-body-sm font-normal text-txt-tertiary">
+            {g.items.length} {g.items.length === 1 ? 'streak' : 'streaks'}
+          </span>
+        </h2>
+        {g.fixture && <FixtureLine fixture={g.fixture} />}
+      </header>
+      <div className="space-y-4 border-l-2 border-warm-sand pl-3 sm:pl-4">
+        {shown.map((c) => (
+          <StreakCard key={c.id} candidate={c} suggestive={suggestive} inGroup={!!c.nextFixture} />
+        ))}
+        {(hidden > 0 || (expanded && g.items.length > SHOWN_PER_MATCH)) && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="w-full rounded-oracle-md border border-dashed border-warm-stone bg-warm-cream px-4 py-3 text-body-sm font-medium text-txt-secondary transition-colors duration-normal hover:text-txt-primary"
+          >
+            {expanded
+              ? `Show fewer for ${g.title}`
+              : `Show ${hidden} more ${hidden === 1 ? 'streak' : 'streaks'} for ${g.title}`}
+          </button>
+        )}
+      </div>
+    </section>
+  );
 }
