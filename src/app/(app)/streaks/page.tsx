@@ -7,7 +7,8 @@ import { useScrollMemory } from '@/hooks/useScrollMemory';
 import { SearchX, Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { CandidatesResponse } from '@/types';
-import { StreakCard } from '@/components/streaks/StreakCard';
+import { FixtureLine, StreakCard } from '@/components/streaks/StreakCard';
+import type { StreakCandidate } from '@/types';
 import { EmptyState } from '@/components/streaks/EmptyState';
 import { cn } from '@/lib/utils';
 
@@ -153,9 +154,29 @@ function StreaksView() {
           <p className="mb-4 text-body-sm text-txt-tertiary">
             {candidates.length} of {tested?.toLocaleString() ?? '—'} slices tested
           </p>
-          <div className="space-y-4">
-            {candidates.map((c) => (
-              <StreakCard key={c.id} candidate={c} suggestive={tier !== 'significant'} />
+          <div className="space-y-8">
+            {groupByMatch(candidates).map((g) => (
+              <section key={g.key} aria-label={g.title}>
+                <header className="mb-3">
+                  <h2 className="font-display text-h5 text-txt-primary">
+                    {g.title}
+                    <span className="ml-2 text-body-sm font-normal text-txt-tertiary">
+                      {g.items.length} {g.items.length === 1 ? 'streak' : 'streaks'}
+                    </span>
+                  </h2>
+                  {g.fixture && <FixtureLine fixture={g.fixture} />}
+                </header>
+                <div className="space-y-4 border-l-2 border-warm-sand pl-3 sm:pl-4">
+                  {g.items.map((c) => (
+                    <StreakCard
+                      key={c.id}
+                      candidate={c}
+                      suggestive={tier !== 'significant'}
+                      inGroup={!!c.nextFixture}
+                    />
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         </>
@@ -166,4 +187,35 @@ function StreaksView() {
       </p>
     </div>
   );
+}
+
+/**
+ * Streaks gathered under the match they are for, so every pick on one event
+ * sits together under its teams. Groups keep the engine's order (strongest
+ * first, by each match's best streak); streaks with no upcoming match go last.
+ */
+function groupByMatch(candidates: StreakCandidate[]) {
+  type Group = {
+    key: string;
+    title: string;
+    fixture: StreakCandidate['nextFixture'];
+    items: StreakCandidate[];
+  };
+  const groups = new Map<string, Group>();
+  for (const c of candidates) {
+    const f = c.nextFixture;
+    const key = f ? f.eventId : 'none';
+    const title = f ? `${f.home.name} vs ${f.away.name}` : 'No upcoming match';
+    // The heading shows the match once, absences for both sides included;
+    // whether they work for or against a pick is each card's own badge.
+    const fixture = f
+      ? { ...f, availability: f.availability ? { ...f.availability, verdict: null } : f.availability }
+      : null;
+    const g = groups.get(key) ?? { key, title, fixture, items: [] };
+    g.items.push(c);
+    groups.set(key, g);
+  }
+  const list = [...groups.values()];
+  const none = list.filter((g) => g.key === 'none');
+  return [...list.filter((g) => g.key !== 'none'), ...none];
 }

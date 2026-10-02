@@ -55,7 +55,7 @@ function kickoffCopy(iso: string): string {
  * The match the card is about, home side on the left, so a reader can go
  * straight to the bookie without looking the fixture up.
  */
-function FixtureLine({ fixture, teamId }: { fixture: NextFixture; teamId?: string }) {
+export function FixtureLine({ fixture, teamId }: { fixture: NextFixture; teamId?: string }) {
   const side = (t: { id: string; name: string }) => (
     <span className={t.id === teamId ? 'font-semibold text-txt-primary' : 'text-txt-secondary'}>
       {t.name}
@@ -195,9 +195,12 @@ function OpponentSplitLine({ split }: { split: OpponentSplit }) {
 export function StreakCard({
   candidate,
   suggestive = false,
+  inGroup = false,
 }: {
   candidate: StreakCandidate;
   suggestive?: boolean;
+  /** Shown under its match's heading: the fixture box is the heading's, not the card's. */
+  inGroup?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const status = STATUS_COPY[candidate.status] ?? STATUS_COPY.ACTIVE;
@@ -311,8 +314,15 @@ export function StreakCard({
         </div>
       </div>
 
-      {candidate.nextFixture && (
+      {candidate.nextFixture && !inGroup && (
         <FixtureLine fixture={candidate.nextFixture} teamId={candidate.entity?.id} />
+      )}
+      {/* Under a match heading the absences are listed once there; the card
+          keeps only what they mean for its own market. */}
+      {inGroup && candidate.nextFixture?.availability?.verdict && (
+        <div className="mt-2">
+          <AbsenceBadge verdict={candidate.nextFixture.availability.verdict} />
+        </div>
       )}
       {candidate.nextFixture && candidate.entity?.type === 'TEAM' && (
         <AddStreakToBuilder
