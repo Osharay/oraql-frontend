@@ -537,20 +537,3 @@ export interface ResultsResponse {
   matches?: ResultsMatch[];
   clusters?: ResultsCluster[];
 }
-
-/** One UK day of the record: how each kind of call landed. */
-export interface DailyRecordDay {
-  date: string; // YYYY-MM-DD
-  picks: HitRate;
-  streaks: HitRate;
-  /** Evidence-backed streaks only. */
-  evidence: HitRate;
-  clusters: HitRate;
-}
-
-export interface DailyRecordResponse {
-  days: DailyRecordDay[];
-  totals: Omit<DailyRecordDay, 'date'>;
-  from: string;
-  to: string;
-}
