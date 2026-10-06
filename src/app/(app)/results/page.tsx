@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Check, Loader2, X, Minus } from 'lucide-react';
+import { CalendarCheck, Check, Loader2, X, Minus } from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { replaceCurrent } from '@/lib/navigation';
@@ -99,11 +99,19 @@ function ResultsView() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
-      <header className="mb-6">
-        <h1 className="font-display text-h2 text-txt-primary">Results</h1>
-        <p className="mt-1 text-body text-txt-secondary">
-          What OraQL picked for matches that have finished, and whether it came.
-        </p>
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-h2 text-txt-primary">Results</h1>
+          <p className="mt-1 text-body text-txt-secondary">
+            What OraQL picked for matches that have finished, and whether it came.
+          </p>
+        </div>
+        <Link
+          href="/results/record"
+          className="inline-flex shrink-0 items-center gap-2 rounded-oracle-full border border-oracle-gold bg-oracle-gold/10 px-4 py-2 text-body-sm font-medium text-txt-primary transition-colors hover:bg-oracle-gold/20"
+        >
+          <CalendarCheck className="h-4 w-4" /> Daily record
+        </Link>
       </header>
 
       <div className="mb-3 flex flex-wrap gap-2">
