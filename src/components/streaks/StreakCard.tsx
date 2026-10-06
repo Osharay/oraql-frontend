@@ -9,6 +9,7 @@ import { LiftMeter } from './LiftMeter';
 import { cn, minimumOddsCopy } from '@/lib/utils';
 import { AbsenceBadge, AvailabilityLine, worthShowing } from './AvailabilityNote';
 import { AddStreakToBuilder } from '@/components/builder/AddStreakToBuilder';
+import { InternationalBadge } from '@/components/ui/InternationalBadge';
 
 const STATUS_COPY: Record<string, { label: string; className: string }> = {
   NEW: { label: 'New', className: 'bg-oracle-gold/15 text-oracle-gold-dark' },
@@ -87,6 +88,7 @@ export function FixtureLine({ fixture, teamId }: { fixture: NextFixture; teamId?
         <span className="rounded-oracle-full bg-white px-2 py-0.5 text-caption font-semibold text-txt-secondary">
           {fixture.competition.kind === 'CUP' ? 'Cup' : 'League'}
         </span>
+        <InternationalBadge show={!!fixture.competition.international} />
       </p>
       {strength && (
         <p

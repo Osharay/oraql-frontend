@@ -280,6 +280,8 @@ export interface NextFixture {
     country: string | null;
     kind: 'LEAGUE' | 'CUP';
     round: string | null;
+    /** National-team competition: records mean less. */
+    international?: boolean;
   };
   /** Who is missing on each side, from the card's team's point of view. */
   availability?: {
@@ -479,4 +481,59 @@ export interface Availability {
 export interface AbsenceVerdict {
   effect: 'HURTS' | 'HELPS';
   level: 'MAJOR' | 'MINOR';
+}
+
+// ─── Results ───
+
+export type ResultValue = 'WIN' | 'LOSS' | 'VOID' | 'UNKNOWN';
+
+export interface HitRate {
+  settled: number;
+  won: number;
+  rate: number | null;
+  /** The average chance OraQL gave: what the rate should be if it is calibrated. */
+  expected: number | null;
+}
+
+export interface ResultsMatch {
+  match: {
+    eventId: string;
+    kickoffAt: string;
+    home: string;
+    away: string;
+    score: string | null;
+    league: string;
+    country: string | null;
+    international: boolean;
+  };
+  items: Array<{
+    label: string;
+    result: ResultValue;
+    probability: number;
+    tier?: 'evidence' | 'emerging' | 'exploratory';
+    driver?: 'RECENT' | 'SEASON';
+  }>;
+}
+
+export interface ResultsCluster {
+  id: string;
+  date: string;
+  tier: string;
+  combinedProbability: number;
+  outcome: 'WIN' | 'LOSS' | 'PENDING' | 'VOID';
+  international: boolean;
+  legs: Array<{ match: ResultsMatch['match']; label: string; result: ResultValue | null; probability: number }>;
+}
+
+export interface ResultsResponse {
+  type: 'picks' | 'streaks' | 'clusters';
+  summary: {
+    overall: HitRate;
+    byScope?: Record<string, HitRate>;
+    byTier?: Record<string, HitRate>;
+    byDriver?: Record<string, HitRate>;
+    legs?: HitRate;
+  };
+  matches?: ResultsMatch[];
+  clusters?: ResultsCluster[];
 }

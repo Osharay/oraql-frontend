@@ -12,6 +12,7 @@ import {
   SlidersHorizontal,
   Flame,
   Boxes,
+  CircleCheck,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,7 @@ const navItems = [
   { href: '/clusters', label: 'Clusters', icon: Boxes },
   { href: '/picks', label: 'OraQL_ Picks', icon: Star },
   { href: '/builder', label: 'Bet Builder', icon: Layers },
+  { href: '/results', label: 'Results', icon: CircleCheck },
 ];
 
 /** Shown only to admins — these controls spend API quota. */

@@ -13,6 +13,7 @@ import {
   VALUE_BET_LABEL,
 } from '@/lib/market-copy';
 import { useBuilderStore } from '@/stores/builder.store';
+import { InternationalBadge, isInternationalCompetition } from '@/components/ui/InternationalBadge';
 import type { Pick } from '@/types';
 
 interface PickCardProps {
@@ -148,6 +149,11 @@ export function PickCard({
           <span className={cn('ml-2', isDark ? 'text-txt-inverse-2' : 'text-txt-tertiary')}>
             {pick.event.league.name}
           </span>
+          {isInternationalCompetition(pick.event.league.name, pick.event.league.country) && (
+            <span className="ml-2 align-middle">
+              <InternationalBadge />
+            </span>
+          )}
         </div>
       )}
 
