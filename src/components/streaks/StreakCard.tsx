@@ -255,13 +255,21 @@ export function StreakCard({
               )}
             </p>
           )}
-          <p className="mt-2 text-body font-semibold text-txt-primary">
-            Happens in {pct(candidate.hitRate)} of their matches
-          </p>
+          {candidate.context?.chance != null ? (
+            <>
+              {/* The honest chance leads; the raw record is the evidence under it. */}
+              <p className="mt-2 text-body font-semibold text-txt-primary">OraQL chance {pct(candidate.context.chance)}</p>
+              <p className="text-body-sm text-txt-secondary">Happens in {pct(candidate.hitRate)} of their matches</p>
+            </>
+          ) : (
+            <p className="mt-2 text-body font-semibold text-txt-primary">
+              Happens in {pct(candidate.hitRate)} of their matches
+            </p>
+          )}
           {!tendency && minimumOddsCopy(chance) && (
             <p
               className="mt-0.5 text-body-sm font-medium text-oracle-gold-dark"
-              title="Break-even is 1 ÷ the chance (recent form, weighted); this adds a 10% margin because the chance is an estimate. Compare it with the bookie's price."
+              title="Break-even is 1 ÷ OraQL's chance; this adds a 10% margin because the chance is an estimate. Compare it with the bookie's price."
             >
               {minimumOddsCopy(chance)}
             </p>
