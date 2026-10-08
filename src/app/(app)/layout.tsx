@@ -6,6 +6,7 @@ import { MobileHeader } from '@/components/layout/MobileHeader';
 import { BuilderBar } from '@/components/builder/BuilderBar';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { NavTracker } from '@/components/layout/NavTracker';
+import { PaywallGate } from '@/components/billing/PaywallGate';
 
 export default function AppLayout({
   children,
@@ -30,7 +31,10 @@ export default function AppLayout({
         <div className="flex min-w-0 flex-1 flex-col">
           <MobileHeader onOpen={() => setMenuOpen(true)} />
           {/* The rail only reserves space from lg up, where it is permanent. */}
-          <main className="min-w-0 flex-1 pb-28 lg:ml-64">{children}</main>
+          <main className="min-w-0 flex-1 pb-28 lg:ml-64">
+            <PaywallGate />
+            {children}
+          </main>
         </div>
 
         <BuilderBar />

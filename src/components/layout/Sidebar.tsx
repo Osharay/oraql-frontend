@@ -13,6 +13,7 @@ import {
   Flame,
   Boxes,
   CircleCheck,
+  CreditCard,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,7 @@ const navItems = [
   { href: '/picks', label: 'OraQL_ Picks', icon: Star },
   { href: '/builder', label: 'Bet Builder', icon: Layers },
   { href: '/results', label: 'Results', icon: CircleCheck },
+  { href: '/subscribe', label: 'Subscription', icon: CreditCard },
 ];
 
 /** Shown only to admins — these controls spend API quota. */

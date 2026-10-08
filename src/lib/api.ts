@@ -165,6 +165,12 @@ class ApiClient {
         }
       }
 
+      // The free trial or a paid period has ended: show the Subscribe page.
+      if (response.status === 402 && typeof window !== 'undefined') {
+        const here = window.location.pathname;
+        if (!here.startsWith('/subscribe') && !here.startsWith('/billing')) window.location.href = '/subscribe';
+      }
+
       throw new ApiError(response.status, error.message || 'Request failed', error.errors);
     }
 
@@ -183,6 +189,10 @@ class ApiClient {
 
   patch<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>('PATCH', path, body);
+  }
+
+  put<T>(path: string, body?: unknown): Promise<T> {
+    return this.request<T>('PUT', path, body);
   }
 
   delete<T>(path: string): Promise<T> {

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { OddsSwitch } from '@/components/admin/OddsSwitch';
 import { UnsettledLeagues } from '@/components/admin/UnsettledLeagues';
+import { PricingPanel } from '@/components/admin/PricingPanel';
 import { cn } from '@/lib/utils';
 
 /** "events: 1500 · observations: 154500" for the running banner. */
@@ -479,6 +480,8 @@ export default function AdminPage() {
           </span>
         </div>
       </section>
+
+      <PricingPanel />
 
       <UnsettledLeagues />
 
