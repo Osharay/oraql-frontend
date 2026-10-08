@@ -222,6 +222,10 @@ export interface StreakCandidate {
     currentSeasonOnly?: number;
     /** Weighted recent form: recent matches count most, pulled towards the long record. */
     formRate?: number;
+    /** The record pulled towards the market's usual rate (from 9 Oct 2026). */
+    seasonRate?: number;
+    /** The chance shown and used: the season figure nudged by form, 5% to 90%. */
+    chance?: number;
     /** The last fifteen matches in this slice. */
     recent?: { wins: number; played: number };
     /** Strong in recent matches alone, though two seasons do not show it. */

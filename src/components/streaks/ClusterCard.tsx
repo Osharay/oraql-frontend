@@ -130,7 +130,7 @@ function ClusterRow({ component: c }: { component: ClusterComponent }) {
   const pct = (v: number) => Math.round(v * 100);
   const recent = sc.context?.recent;
   const formRate = sc.context?.formRate ?? null;
-  const chance = formRate ?? s.hitRate;
+  const chance = sc.context?.chance ?? formRate ?? s.hitRate;
   const price = chance >= 0.5 ? minimumOddsCopy(chance) : null;
   const teamId = sc.entityType === 'TEAM' ? sc.entityId : null;
   const where = [s.event.league.name, s.event.league.country].filter(Boolean).join(' · ');
@@ -155,7 +155,7 @@ function ClusterRow({ component: c }: { component: ClusterComponent }) {
         </div>
 
         <div className="shrink-0 text-right">
-          <p className="text-body-sm font-semibold text-txt-primary">{pct(s.hitRate)}%</p>
+          <p className="text-body-sm font-semibold text-txt-primary">{pct(sc.context?.chance ?? s.hitRate)}%</p>
           <p className="text-caption text-txt-tertiary">usually {pct(s.baselineRate)}%</p>
           {result && (
             <span
@@ -265,7 +265,7 @@ function AddClusterToBuilder({ cluster }: { cluster: Cluster }) {
               eventId: s.event.id!,
               marketId: sc.marketDefinition.marketId,
               teamId: sc.entityType === 'TEAM' ? sc.entityId : null,
-              probability: sc.context?.formRate ?? s.hitRate,
+              probability: sc.context?.chance ?? sc.context?.formRate ?? s.hitRate,
               source: 'CLUSTER',
             });
             if (reason) failed.push(`${s.marketLabel || sc.marketDefinition.displayName}: ${reason}`);

@@ -16,7 +16,7 @@ type Tier = 'significant' | 'emerging' | 'suggestive';
 
 const TIER_LABEL: Record<Tier, string> = {
   significant: 'Evidence-backed',
-  emerging: 'Emerging',
+  emerging: 'Emerging · watch list',
   suggestive: 'Exploratory',
 };
 
@@ -97,7 +97,8 @@ function StreaksView() {
         <p className="mb-5 rounded-oracle-sm border border-warm-stone bg-warm-cream px-4 py-3 text-body-sm text-txt-secondary">
           Strong over the last fifteen matches, though two seasons do not show it yet. A run
           like this can be the start of something or a hot spell — OraQL records how these
-          settle, so treat them as leads to check, not evidence.
+          settle, so treat them as leads to check, not evidence. They stay out of OraQL&apos;s
+          clusters until their own record beats what OraQL expected over 100 settled picks.
         </p>
       )}
 

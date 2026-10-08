@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { OddsSwitch } from '@/components/admin/OddsSwitch';
+import { UnsettledLeagues } from '@/components/admin/UnsettledLeagues';
 import { cn } from '@/lib/utils';
 
 /** "events: 1500 · observations: 154500" for the running banner. */
@@ -478,6 +479,8 @@ export default function AdminPage() {
           </span>
         </div>
       </section>
+
+      <UnsettledLeagues />
 
       {/* ─── Engine ─── */}
       <section className="mb-6 rounded-oracle-md border border-warm-stone bg-white p-6 shadow-soft">

@@ -216,7 +216,7 @@ export function StreakCard({
   const recent = candidate.context?.recent;
   const formRate = candidate.context?.formRate ?? null;
   // Recent form leads, the long record behind it: the price follows form.
-  const chance = formRate ?? candidate.hitRate;
+  const chance = candidate.context?.chance ?? formRate ?? candidate.hitRate;
   const tendency = chance < 0.5;
   const emerging = !candidate.survivedGate && candidate.context?.emerging;
 

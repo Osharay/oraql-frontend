@@ -10,6 +10,7 @@ import { replaceCurrent } from '@/lib/navigation';
 import { useScrollMemory } from '@/hooks/useScrollMemory';
 import { InternationalBadge } from '@/components/ui/InternationalBadge';
 import { EmptyState } from '@/components/streaks/EmptyState';
+import { verdict } from '@/lib/verdict';
 import type { HitRate, ResultsCluster, ResultsMatch, ResultsResponse, ResultValue } from '@/types';
 
 type Type = 'picks' | 'streaks' | 'clusters';
@@ -206,13 +207,7 @@ function Summary({ data }: { data: ResultsResponse }) {
         )}
       </div>
       {o.rate != null && o.expected != null && o.settled >= 10 && (
-        <p className="mt-2 text-body-sm text-txt-secondary">
-          {o.rate < o.expected - 0.08
-            ? 'Landing noticeably less often than OraQL expected. Check the splits below for where.'
-            : o.rate > o.expected + 0.08
-              ? 'Landing more often than OraQL expected.'
-              : 'Landing about as often as OraQL expected.'}
-        </p>
+        <p className="mt-2 text-body-sm text-txt-secondary">{verdict(o.rate, o.expected, o.settled)}</p>
       )}
       {o.settled > 0 && o.settled < 10 && (
         <p className="mt-2 text-caption text-txt-tertiary">Too few settled yet to read much into the rate.</p>

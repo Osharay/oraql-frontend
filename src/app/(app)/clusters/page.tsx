@@ -56,8 +56,8 @@ export default function ClustersPage() {
         <EmptyState
           icon={<Layers className="h-8 w-8" />}
           title="No clusters today"
-          body="A cluster needs at least two streaks that each cleared the bar on their own, from different events and different markets."
-          detail="On days when few streaks qualify, there is nothing to gather. That is expected rather than a fault."
+          body="A cluster needs at least two picks from different matches, each with at least a 60% chance, and at least a 20% chance of landing together."
+          detail="On days when too few picks qualify, OraQL shows none rather than filling the gap with long shots."
         />
       )}
 
@@ -67,6 +67,14 @@ export default function ClustersPage() {
           tier down: teams whose recent record sits well above the market's usual
           rate, which is a lead to check rather than a finding. Their results are
           tracked separately, so the tier can be judged on its own record.
+        </p>
+      )}
+
+      {!loading && clusters.length > 0 && clusters.length < 3 && (
+        <p className="mb-6 rounded-oracle-sm border border-warm-stone bg-warm-cream px-4 py-3 text-body-sm text-txt-secondary">
+          Only {clusters.length} cluster{clusters.length === 1 ? '' : 's'} cleared OraQL&apos;s bar today: every
+          selection at least 60% and the whole cluster at least 20%. On thin days OraQL shows fewer clusters
+          rather than long shots.
         </p>
       )}
 
