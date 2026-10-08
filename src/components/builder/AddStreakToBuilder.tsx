@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Check, Loader2, Plus } from 'lucide-react';
 import { useBuilderStore } from '@/stores/builder.store';
 import { cn } from '@/lib/utils';
+import type { SelectionSource } from '@/types';
 
 /**
  * "Add to Builder" for a streak or cluster selection. Says why when the API
@@ -15,6 +16,7 @@ export function AddStreakToBuilder({
   teamId,
   probability,
   kickoffAt,
+  source,
   className,
 }: {
   eventId?: string | null;
@@ -22,6 +24,8 @@ export function AddStreakToBuilder({
   teamId?: string | null;
   probability?: number;
   kickoffAt?: string | null;
+  /** Where it is added from, shown if the builder is saved as a cluster. */
+  source?: SelectionSource;
   className?: string;
 }) {
   const addStreak = useBuilderStore((s) => s.addStreak);
@@ -42,7 +46,7 @@ export function AddStreakToBuilder({
           e.preventDefault();
           e.stopPropagation();
           setState('busy');
-          const reason = await addStreak({ eventId, marketId, teamId, probability });
+          const reason = await addStreak({ eventId, marketId, teamId, probability, source });
           setError(reason);
           setState(reason ? 'idle' : 'added');
         }}

@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { api } from '@/lib/api';
-import type { BuilderState, BuilderSelection } from '@/types';
+import type { BuilderState, BuilderSelection, SelectionSource } from '@/types';
 
 interface BuilderStore extends BuilderState {
   isLoading: boolean;
@@ -10,7 +10,15 @@ interface BuilderStore extends BuilderState {
   /** Resolves to null on success, or the reason the selection was refused. */
   add: (marketId: string) => Promise<string | null>;
   /** A streak or cluster selection: the fixture, the streak market, and whose it is. */
-  addStreak: (leg: { eventId: string; marketId: string; teamId?: string | null; probability?: number }) => Promise<string | null>;
+  addStreak: (leg: {
+    eventId: string;
+    marketId: string;
+    teamId?: string | null;
+    probability?: number;
+    source?: SelectionSource;
+  }) => Promise<string | null>;
+  /** Save the builder as a cluster: the new cluster's id, or the reason it was refused. */
+  saveCluster: (name?: string) => Promise<{ id: string } | { error: string }>;
   remove: (marketId: string) => Promise<void>;
   clear: () => Promise<void>;
   exportText: () => Promise<string>;
@@ -54,12 +62,22 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
         marketId: leg.marketId,
         ...(leg.teamId ? { teamId: leg.teamId } : {}),
         ...(leg.probability != null ? { probability: leg.probability } : {}),
+        ...(leg.source ? { source: leg.source } : {}),
       });
     } catch (error) {
       return error instanceof Error ? error.message : 'Could not add this selection';
     }
     await get().load();
     return null;
+  },
+
+  saveCluster: async (name) => {
+    try {
+      const res = await api.post<{ id: string }>('/custom-clusters', name?.trim() ? { name: name.trim() } : {});
+      return { id: res.id };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Could not save this cluster' };
+    }
   },
 
   remove: async (marketId) => {

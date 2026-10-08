@@ -141,11 +141,16 @@ export interface MatchStat {
   redCards: number;
 }
 
+/** Where a Bet Builder selection was added from. */
+export type SelectionSource = 'STREAK_EVIDENCE' | 'STREAK_EMERGING' | 'STREAK_EXPLORATORY' | 'CLUSTER' | 'MATCH_FORM';
+
 export interface BuilderSelection {
   id: string;
   market: Market & { event: Event };
   addedProbability: number;
   createdAt: string;
+  /** Null for a market added from a match page. */
+  source?: SelectionSource | null;
 }
 
 export interface BuilderState {
@@ -536,4 +541,41 @@ export interface ResultsResponse {
   };
   matches?: ResultsMatch[];
   clusters?: ResultsCluster[];
+}
+
+/** A cluster the user saved from the Bet Builder, and how it is going. */
+export interface CustomClusterLeg {
+  match: {
+    eventId: string;
+    kickoffAt: string;
+    status: string;
+    home: string;
+    away: string;
+    score: string | null;
+    league: string;
+    country: string | null;
+    international: boolean;
+  };
+  label: string;
+  /** Where it came from, in words: "Evidence-backed streak", "Match market"… */
+  from: string;
+  probability: number;
+  result: ResultValue | null;
+}
+
+export interface CustomCluster {
+  id: string;
+  name: string | null;
+  createdAt: string;
+  state: 'UPCOMING' | 'IN_PLAY' | 'SETTLED';
+  outcome: 'WIN' | 'LOSS' | 'VOID' | 'PENDING';
+  combinedProbability: number | null;
+  combinedRange: { low: number; high: number };
+  canDelete: boolean;
+  legs: CustomClusterLeg[];
+}
+
+export interface CustomClustersResponse {
+  summary: { clusters: HitRate; selections: HitRate; waiting: number };
+  clusters: CustomCluster[];
 }

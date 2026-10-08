@@ -217,6 +217,7 @@ function ClusterRow({ component: c }: { component: ClusterComponent }) {
               teamId={sc.entityType === 'TEAM' ? sc.entityId : null}
               probability={chance}
               kickoffAt={s.event.kickoffAt}
+              source="CLUSTER"
             />
           )}
 
@@ -265,6 +266,7 @@ function AddClusterToBuilder({ cluster }: { cluster: Cluster }) {
               marketId: sc.marketDefinition.marketId,
               teamId: sc.entityType === 'TEAM' ? sc.entityId : null,
               probability: sc.context?.formRate ?? s.hitRate,
+              source: 'CLUSTER',
             });
             if (reason) failed.push(`${s.marketLabel || sc.marketDefinition.displayName}: ${reason}`);
           }

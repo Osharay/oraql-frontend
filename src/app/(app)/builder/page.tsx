@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Layers, X, Copy, Trash2, ArrowRight, Sparkles } from 'lucide-react';
+import { Layers, X, Copy, Trash2, ArrowRight, Sparkles, Lock, Check } from 'lucide-react';
 import {
   cn,
   combinedChanceNote,
@@ -13,6 +13,15 @@ import { Button } from '@/components/ui/Button';
 import { useBuilderStore } from '@/stores/builder.store';
 import Link from 'next/link';
 import { marketShortLabel, marketSubject } from '@/lib/market-copy';
+import type { SelectionSource } from '@/types';
+
+const SOURCE_LABEL: Record<SelectionSource, string> = {
+  STREAK_EVIDENCE: 'Evidence-backed streak',
+  STREAK_EMERGING: 'Emerging streak',
+  STREAK_EXPLORATORY: 'Exploratory streak',
+  CLUSTER: 'From an OraQL cluster',
+  MATCH_FORM: 'Match page form',
+};
 
 export default function BuilderPage() {
   const {
@@ -25,9 +34,27 @@ export default function BuilderPage() {
     remove,
     clear,
     exportText,
+    saveCluster,
     isLoading,
   } = useBuilderStore();
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState<'closed' | 'open' | 'busy' | 'saved'>('closed');
+  const [clusterName, setClusterName] = useState('');
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const started = selections.filter((s) => new Date(s.market.event.kickoffAt).getTime() <= Date.now());
+
+  const handleSave = async () => {
+    setSaving('busy');
+    setSaveError(null);
+    const res = await saveCluster(clusterName);
+    if ('error' in res) {
+      setSaveError(res.error);
+      setSaving('open');
+    } else {
+      setSaving('saved');
+      setClusterName('');
+    }
+  };
 
   useEffect(() => {
     load();
@@ -94,6 +121,19 @@ export default function BuilderPage() {
 
               {/* Action Buttons */}
               <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setSaveError(null);
+                    setSaving(saving === 'open' ? 'closed' : 'open');
+                  }}
+                  disabled={count < 2}
+                  title={count < 2 ? 'Add at least 2 selections to save them as a cluster' : undefined}
+                  className="flex-1 sm:flex-none"
+                >
+                  <Lock className="h-4 w-4" />
+                  Save as cluster
+                </Button>
                 <Button variant="gold" onClick={handleExport} className="flex-1 sm:flex-none">
                   <Copy className="h-4 w-4" />
                   {copied ? 'Copied!' : 'Export'}
@@ -111,6 +151,62 @@ export default function BuilderPage() {
           )}
         </div>
       </div>
+
+      {/* Save as cluster: lock these selections in and follow how they land */}
+      {count > 0 && saving !== 'closed' && (
+        <div className="border-b border-warm-sand bg-warm-cream px-6 py-5 md:px-8">
+          {saving === 'saved' ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-lift-pos/20 text-lift-strong">
+                <Check className="h-4 w-4" />
+              </span>
+              <p className="text-body-sm text-txt-primary">
+                Saved and locked. Its result shows in My clusters once the matches finish.
+              </p>
+              <Link href="/results/my-clusters" className="text-body-sm font-semibold text-oracle-gold-dark hover:underline">
+                See My clusters
+              </Link>
+              <button onClick={() => { clear(); setSaving('closed'); }} className="text-body-sm text-txt-tertiary hover:text-txt-primary">
+                Clear the builder
+              </button>
+              <button onClick={() => setSaving('closed')} className="ml-auto text-txt-tertiary hover:text-txt-primary" aria-label="Close">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="max-w-2xl space-y-3">
+              <p className="text-body-sm text-txt-secondary">
+                Save these {count} selections as your own cluster, to see whether they land without placing a bet.
+                Once saved it is locked and cannot be changed. You can delete it only until its first match starts.
+              </p>
+              {started.length > 0 && (
+                <p className="text-body-sm text-danger">
+                  {started.length === 1 ? 'One selection has' : `${started.length} selections have`} already kicked off. Remove{' '}
+                  {started.length === 1 ? 'it' : 'them'} to save.
+                </p>
+              )}
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={clusterName}
+                  onChange={(e) => setClusterName(e.target.value)}
+                  maxLength={80}
+                  placeholder="Name it (optional), e.g. Saturday goals"
+                  className="flex-1 rounded-oracle-md border border-warm-stone bg-white px-3 py-2 text-body-sm text-txt-primary placeholder:text-txt-tertiary focus:border-oracle-gold focus:outline-none"
+                />
+                <Button variant="primary" onClick={handleSave} disabled={saving === 'busy' || started.length > 0}>
+                  <Lock className="h-4 w-4" />
+                  {saving === 'busy' ? 'Saving…' : 'Save and lock'}
+                </Button>
+              </div>
+              {saveError && (
+                <p role="alert" className="text-body-sm text-danger">
+                  {saveError}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Selections Section - Warm Light Surface */}
       {isLoading ? (
@@ -149,6 +245,8 @@ export default function BuilderPage() {
                     {s.market.event.league.name}
                     <span className="mx-2 text-warm-stone">·</span>
                     {formatKickoff(s.market.event.kickoffAt)}
+                    <span className="mx-2 text-warm-stone">·</span>
+                    {s.source ? SOURCE_LABEL[s.source] : 'Match market'}
                   </p>
                 </div>
 

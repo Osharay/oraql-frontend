@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CalendarCheck, Check, Loader2, X, Minus } from 'lucide-react';
+import { Boxes, CalendarCheck, Check, Loader2, X, Minus } from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { replaceCurrent } from '@/lib/navigation';
@@ -106,12 +106,20 @@ function ResultsView() {
             What OraQL picked for matches that have finished, and whether it came.
           </p>
         </div>
-        <Link
-          href="/results/record"
-          className="inline-flex shrink-0 items-center gap-2 rounded-oracle-full border border-oracle-gold bg-oracle-gold/10 px-4 py-2 text-body-sm font-medium text-txt-primary transition-colors hover:bg-oracle-gold/20"
-        >
-          <CalendarCheck className="h-4 w-4" /> Daily record
-        </Link>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Link
+            href="/results/my-clusters"
+            className="inline-flex items-center gap-2 rounded-oracle-full border border-oracle-gold bg-oracle-gold/10 px-4 py-2 text-body-sm font-medium text-txt-primary transition-colors hover:bg-oracle-gold/20"
+          >
+            <Boxes className="h-4 w-4" /> My clusters
+          </Link>
+          <Link
+            href="/results/record"
+            className="inline-flex items-center gap-2 rounded-oracle-full border border-oracle-gold bg-oracle-gold/10 px-4 py-2 text-body-sm font-medium text-txt-primary transition-colors hover:bg-oracle-gold/20"
+          >
+            <CalendarCheck className="h-4 w-4" /> Daily record
+          </Link>
+        </div>
       </header>
 
       <div className="mb-3 flex flex-wrap gap-2">

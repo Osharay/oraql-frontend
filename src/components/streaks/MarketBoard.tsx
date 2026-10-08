@@ -244,6 +244,7 @@ export function MarketBoard({ eventId }: { eventId: string }) {
               teamId={r.side === 'HOME' ? data.event.home.id : r.side === 'AWAY' ? data.event.away.id : null}
               probability={r.probability}
               kickoffAt={data.event.kickoffAt}
+              source="MATCH_FORM"
             />
           </li>
         ))}

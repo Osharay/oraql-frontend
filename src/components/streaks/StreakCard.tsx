@@ -334,6 +334,7 @@ export function StreakCard({
           teamId={candidate.entity.id}
           probability={chance}
           kickoffAt={candidate.nextFixture.kickoffAt}
+          source={candidate.survivedGate ? 'STREAK_EVIDENCE' : emerging ? 'STREAK_EMERGING' : 'STREAK_EXPLORATORY'}
         />
       )}
 
