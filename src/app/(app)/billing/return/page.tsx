@@ -45,7 +45,7 @@ function Return() {
         if (res.paid) {
           setUntil(res.subscriptionEndsAt ?? null);
           if (res.plan && res.amount != null) {
-            const label = res.plan === 'QUARTERLY' ? '3 months' : '1 month';
+            const label = res.plan === 'QUARTERLY' ? '3 months' : res.plan === 'DAILY' ? '1 day' : '1 month';
             const price = res.currency === 'NGN' || !res.currency ? `₦${res.amount.toLocaleString('en-NG')}` : `${res.currency} ${res.amount.toLocaleString()}`;
             setBought(`${label} · ${price}`);
           }

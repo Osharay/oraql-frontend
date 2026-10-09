@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { naira } from '@/stores/billing.store';
 
 interface Settings {
+  dailyPrice: number;
   monthlyPrice: number;
   quarterlyPrice: number;
   trialDays: number;
@@ -54,6 +55,7 @@ export function PricingPanel() {
     setNote(null);
     try {
       const v = await api.put<Settings>('/billing/settings', {
+        dailyPrice: Number(draft.dailyPrice),
         monthlyPrice: Number(draft.monthlyPrice),
         quarterlyPrice: Number(draft.quarterlyPrice),
         trialDays: Number(draft.trialDays),
@@ -85,7 +87,11 @@ export function PricingPanel() {
       )}
       {draft && (
         <>
-          <div className="mb-4 grid gap-4 sm:grid-cols-3">
+          <div className="mb-4 grid gap-4 sm:grid-cols-4">
+            <label className="text-body-sm text-txt-secondary">
+              1 day (₦)
+              <input type="number" min={100} className={field} value={draft.dailyPrice ?? 200} onChange={(e) => setDraft({ ...draft, dailyPrice: Number(e.target.value) })} />
+            </label>
             <label className="text-body-sm text-txt-secondary">
               1 month (₦)
               <input type="number" min={100} className={field} value={draft.monthlyPrice} onChange={(e) => setDraft({ ...draft, monthlyPrice: Number(e.target.value) })} />
@@ -130,7 +136,7 @@ export function PricingPanel() {
                 <li key={p.reference} className="flex flex-wrap items-baseline justify-between gap-2 px-4 py-2 text-body-sm">
                   <span className="text-txt-primary">
                     {p.user.email}
-                    <span className="text-txt-tertiary"> · {p.plan === 'MONTHLY' ? '1 month' : '3 months'} · {p.provider === 'BACHS' ? 'Bachs' : 'Flutterwave'}</span>
+                    <span className="text-txt-tertiary"> · {p.plan === 'MONTHLY' ? '1 month' : p.plan === 'DAILY' ? '1 day' : '3 months'} · {p.provider === 'BACHS' ? 'Bachs' : 'Flutterwave'}</span>
                   </span>
                   <span className={p.status === 'PAID' ? 'text-lift-strong' : 'text-txt-tertiary'}>
                     {naira(p.amount, p.currency)} · {p.status.toLowerCase()} · {new Date(p.createdAt).toLocaleDateString()}

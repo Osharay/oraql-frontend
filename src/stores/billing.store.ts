@@ -4,7 +4,9 @@ import { create } from 'zustand';
 import { api } from '@/lib/api';
 
 export type AccessState = 'ADMIN' | 'COMP' | 'OFF' | 'TRIAL' | 'ACTIVE' | 'EXPIRED';
-export type PlanId = 'MONTHLY' | 'QUARTERLY';
+export type PlanId = 'DAILY' | 'MONTHLY' | 'QUARTERLY';
+
+export const PLAN_NAME: Record<PlanId, string> = { DAILY: '1 day', MONTHLY: '1 month', QUARTERLY: '3 months' };
 export type ProviderId = 'FLUTTERWAVE' | 'BACHS';
 
 export interface BillingStatus {

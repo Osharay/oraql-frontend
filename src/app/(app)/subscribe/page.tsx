@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Check, Loader2, Lock, ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { naira, timeLeft, useBillingStore, type PlanId, type ProviderId } from '@/stores/billing.store';
+import { naira, PLAN_NAME, timeLeft, useBillingStore, type PlanId, type ProviderId } from '@/stores/billing.store';
 
 export default function SubscribePage() {
   return (
@@ -59,7 +59,7 @@ function Subscribe() {
   const canBuyChosen = chosen.buyable !== false;
   const nothingToBuy = status.plans.every((p) => p.buyable === false);
   const renewFrom = status.plans.find((p) => p.renewFrom)?.renewFrom;
-  const isUpgrade = status.currentPlan === 'MONTHLY' && chosen.id === 'QUARTERLY';
+  const isUpgrade = isLonger(chosen.id, status.currentPlan);
 
   const pay = async () => {
     if (!provider) return;
@@ -92,7 +92,7 @@ function Subscribe() {
       )}
 
       <h2 className="mb-3 text-caption font-semibold uppercase tracking-wide text-txt-tertiary">1 · Choose a plan</h2>
-      <div className="mb-7 grid gap-3 sm:grid-cols-2">
+      <div className="mb-7 grid gap-3 sm:grid-cols-3">
         {status.plans.map((p) => (
           <button
             key={p.id}
@@ -112,14 +112,16 @@ function Subscribe() {
             <p className="text-body-sm font-medium text-txt-secondary">{p.label}</p>
             <p className="mt-1 font-display text-h3 text-txt-primary">{naira(p.price, status.currency)}</p>
             <p className="text-caption text-txt-tertiary">
-              {p.days} days of full access
+              {p.days === 1 ? '24 hours' : `${p.days} days`} of full access
               {p.days > 30 && ` · ${naira(Math.round(p.price / (p.days / 30)), status.currency)} a month`}
             </p>
             {status.currentPlan === p.id && (
               <p className="mt-2 text-caption font-semibold text-lift-strong">Your current plan</p>
             )}
-            {status.currentPlan === 'MONTHLY' && p.id === 'QUARTERLY' && p.buyable !== false && (
-              <p className="mt-2 text-caption font-semibold text-oracle-gold-dark">Upgrade · 90 days added to what you have left</p>
+            {isLonger(p.id, status.currentPlan) && p.buyable !== false && (
+              <p className="mt-2 text-caption font-semibold text-oracle-gold-dark">
+                Upgrade · {p.days} days added to what you have left
+              </p>
             )}
             {plan === p.id && p.buyable !== false && <Check className="absolute bottom-4 right-4 h-5 w-5 text-oracle-gold-dark" />}
           </button>
@@ -177,6 +179,10 @@ function Subscribe() {
   );
 }
 
+const RANK: Record<PlanId, number> = { DAILY: 0, MONTHLY: 1, QUARTERLY: 2 };
+/** Whether `plan` is longer than the plan the user is on now. */
+const isLonger = (plan: PlanId, current: PlanId | null | undefined) => !!current && RANK[plan] > RANK[current];
+
 function StatusLine() {
   const status = useBillingStore((s) => s.status);
   if (!status) return null;
@@ -199,11 +205,13 @@ function StatusLine() {
     case 'ACTIVE':
       return (
         <p className={cn(box, 'border-lift-pos/30 bg-lift-pos/10 text-txt-primary')}>
-          You are subscribed{status.currentPlan ? ` on the ${status.currentPlan === 'MONTHLY' ? '1-month' : '3-month'} plan` : ''}{' '}
+          You are subscribed{status.currentPlan ? ` on the ${PLAN_NAME[status.currentPlan]} plan` : ''}{' '}
           until <span className="font-semibold">{fmtDate(status.subscriptionEndsAt!)}</span>.{' '}
-          {status.currentPlan === 'MONTHLY'
-            ? 'You can upgrade to 3 months now; the 90 days go on top of what you have left.'
-            : 'You can renew in the last 3 days before it ends.'}
+          {status.currentPlan === 'DAILY'
+            ? 'You can buy another day or upgrade at any time; the days go on top of what you have left.'
+            : status.currentPlan === 'MONTHLY'
+              ? 'You can upgrade to 3 months now; the 90 days go on top of what you have left.'
+              : 'You can renew in the last 3 days before it ends.'}
         </p>
       );
     default:
