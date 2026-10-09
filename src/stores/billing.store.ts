@@ -14,7 +14,19 @@ export interface BillingStatus {
   subscriptionEndsAt: string | null;
   currency: string;
   trialDays: number;
-  plans: Array<{ id: PlanId; label: string; price: number; days: number; saving: number }>;
+  /** The plan of the running paid period, if any. */
+  currentPlan?: PlanId | null;
+  plans: Array<{
+    id: PlanId;
+    label: string;
+    price: number;
+    days: number;
+    saving: number;
+    /** False while a paid period runs, except an upgrade or a renewal in its last days. */
+    buyable?: boolean;
+    note?: string | null;
+    renewFrom?: string | null;
+  }>;
   providers: Array<{ id: ProviderId; label: string; methods: string; available: boolean }>;
 }
 

@@ -35,6 +35,13 @@ function Subscribe() {
     load();
   }, [load]);
 
+  // Start on a plan that can be bought now (3 months first).
+  useEffect(() => {
+    if (!status) return;
+    const open = status.plans.filter((p) => p.buyable !== false);
+    if (open.length && !open.some((p) => p.id === plan)) setPlan(open[open.length - 1].id);
+  }, [status, plan]);
+
   useEffect(() => {
     if (status && !provider) setProvider(status.providers.find((p) => p.available)?.id ?? null);
   }, [status, provider]);
@@ -49,6 +56,10 @@ function Subscribe() {
 
   const chosen = status.plans.find((p) => p.id === plan) ?? status.plans[0];
   const chosenProvider = status.providers.find((p) => p.id === provider);
+  const canBuyChosen = chosen.buyable !== false;
+  const nothingToBuy = status.plans.every((p) => p.buyable === false);
+  const renewFrom = status.plans.find((p) => p.renewFrom)?.renewFrom;
+  const isUpgrade = status.currentPlan === 'MONTHLY' && chosen.id === 'QUARTERLY';
 
   const pay = async () => {
     if (!provider) return;
@@ -85,10 +96,11 @@ function Subscribe() {
         {status.plans.map((p) => (
           <button
             key={p.id}
+            disabled={p.buyable === false}
             onClick={() => setPlan(p.id)}
             aria-pressed={plan === p.id}
             className={cn(
-              'relative rounded-oracle-md border bg-white p-5 text-left shadow-soft transition-colors',
+              'relative rounded-oracle-md border bg-white p-5 text-left shadow-soft transition-colors disabled:cursor-not-allowed disabled:opacity-50',
               plan === p.id ? 'border-oracle-gold ring-2 ring-oracle-gold/30' : 'border-warm-stone hover:border-oracle-gold/60',
             )}
           >
@@ -103,7 +115,13 @@ function Subscribe() {
               {p.days} days of full access
               {p.days > 30 && ` · ${naira(Math.round(p.price / (p.days / 30)), status.currency)} a month`}
             </p>
-            {plan === p.id && <Check className="absolute bottom-4 right-4 h-5 w-5 text-oracle-gold-dark" />}
+            {status.currentPlan === p.id && (
+              <p className="mt-2 text-caption font-semibold text-lift-strong">Your current plan</p>
+            )}
+            {status.currentPlan === 'MONTHLY' && p.id === 'QUARTERLY' && p.buyable !== false && (
+              <p className="mt-2 text-caption font-semibold text-oracle-gold-dark">Upgrade · 90 days added to what you have left</p>
+            )}
+            {plan === p.id && p.buyable !== false && <Check className="absolute bottom-4 right-4 h-5 w-5 text-oracle-gold-dark" />}
           </button>
         ))}
       </div>
@@ -129,14 +147,18 @@ function Subscribe() {
 
       <button
         onClick={pay}
-        disabled={busy || !chosenProvider?.available}
+        disabled={busy || !chosenProvider?.available || !canBuyChosen}
         className="inline-flex w-full items-center justify-center gap-2 rounded-oracle-md bg-txt-primary px-5 py-3.5 text-body font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
         {busy
           ? 'Opening the payment page…'
-          : chosenProvider?.available
-            ? `Pay ${naira(chosen.price, status.currency)} with ${chosenProvider.label}`
+          : nothingToBuy
+            ? renewFrom
+              ? `You can renew from ${fmtDate(renewFrom)}`
+              : 'Nothing to buy right now'
+            : chosenProvider?.available
+            ? `${isUpgrade ? 'Upgrade for' : 'Pay'} ${naira(chosen.price, status.currency)} with ${chosenProvider.label}`
             : 'No payment option is available yet'}
       </button>
       {error && (
@@ -148,7 +170,7 @@ function Subscribe() {
       <p className="mt-6 flex items-start gap-2 text-caption text-txt-tertiary">
         <ShieldCheck className="mt-px h-4 w-4 shrink-0 text-oracle-gold-dark" />
         You pay on {chosenProvider?.label ?? 'the provider'}&apos;s secure page; OraQL never sees your card. It is a
-        one-off payment: nothing renews by itself, and paying before your time runs out adds the days on top.
+        one-off payment: nothing renews by itself, and renewing or upgrading before your time runs out adds the days on top.
         OraQL is a research tool, not a promise of winnings. 18+ only.
       </p>
     </div>
@@ -177,8 +199,11 @@ function StatusLine() {
     case 'ACTIVE':
       return (
         <p className={cn(box, 'border-lift-pos/30 bg-lift-pos/10 text-txt-primary')}>
-          You are subscribed until <span className="font-semibold">{fmtDate(status.subscriptionEndsAt!)}</span>. Paying
-          again adds the days on top.
+          You are subscribed{status.currentPlan ? ` on the ${status.currentPlan === 'MONTHLY' ? '1-month' : '3-month'} plan` : ''}{' '}
+          until <span className="font-semibold">{fmtDate(status.subscriptionEndsAt!)}</span>.{' '}
+          {status.currentPlan === 'MONTHLY'
+            ? 'You can upgrade to 3 months now; the 90 days go on top of what you have left.'
+            : 'You can renew in the last 3 days before it ends.'}
         </p>
       );
     default:
