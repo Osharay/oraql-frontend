@@ -327,6 +327,8 @@ export interface MarketSubject {
 export interface ClusterComponent {
   id: string;
   rank: number;
+  /** The chance it was built into the cluster with (null on older clusters). */
+  chance?: number | null;
   snapshot: {
     /** The market named for the club it applies to. */
     marketLabel?: string;
