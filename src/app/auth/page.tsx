@@ -80,20 +80,20 @@ function AuthPageContent() {
           {/* Headline */}
           <h1 className="max-w-lg font-display text-display-xl leading-[1.05] tracking-tight text-txt-inverse">
             Smarter bets start with{' '}
-            <span className="text-oracle-gradient">better data.</span>
+            <span className="text-oracle-gradient">proof.</span>
           </h1>
 
           <p className="mt-6 max-w-md text-body-lg leading-relaxed text-txt-inverse-2">
-            Probability-driven analysis across every market, every match.
-            Transparent reasoning you can trust.
+            Team patterns that beat the usual rate, honest chances, and a record you
+            can check — wins and losses.
           </p>
 
           {/* Feature highlights */}
           <div className="mt-12 space-y-4">
             {[
-              'Poisson-based probability engine',
-              'Value bet detection (10%+ edge)',
-              'Real-time lineup updates',
+              'Two days of full access, free',
+              'Every pick locked before kickoff',
+              'Full results record, losses included',
             ].map((feature) => (
               <div
                 key={feature}
@@ -108,7 +108,7 @@ function AuthPageContent() {
 
         {/* Footer */}
         <p className="relative z-10 text-caption text-txt-inverse-2/50">
-          OraQL_ does not place bets or handle money. Use responsibly.
+          OraQL_ is a research tool. It does not take bets or promise winnings. 18+ only — bet responsibly.
         </p>
       </div>
 

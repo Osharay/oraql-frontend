@@ -2,12 +2,15 @@ import Link from 'next/link';
 import {
   Trophy,
   ArrowRight,
-  BarChart3,
-  Brain,
+  Boxes,
+  CircleCheck,
+  Flame,
+  Gauge,
   Layers,
-  Shield,
-  TrendingUp,
-  Zap,
+  Lock,
+  Search,
+  ShieldCheck,
+  Star,
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -52,19 +55,19 @@ export default function LandingPage() {
         </span>
         <div className="relative z-10 mx-auto max-w-6xl px-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-warm-stone bg-warm-white px-4 py-1.5 text-caption font-semibold uppercase tracking-widest text-oracle-gold-dark">
-            <Zap className="h-3 w-3" />
-            Probability-Driven Intelligence
+            <ShieldCheck className="h-3 w-3" />
+            Evidence, not tips
           </div>
 
           <h1 className="mt-6 max-w-3xl font-display text-display-xl tracking-tight text-dark-ink">
             Smarter bets start with{' '}
-            <span className="text-oracle-gradient">better data.</span>
+            <span className="text-oracle-gradient">proof.</span>
           </h1>
 
           <p className="mt-6 max-w-xl text-body-lg leading-relaxed text-txt-secondary">
-            OraQL_ analyses every market, every match — computing probabilities from
-            real match data, surfacing value bets, and explaining its reasoning in
-            plain language.
+            OraQL_ finds the team patterns that happen far more often than normal, gives
+            each one an honest chance of landing, and shows its full record — wins and
+            losses — so you can judge it before you stake a naira.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -72,7 +75,7 @@ export default function LandingPage() {
               href="/auth?mode=register"
               className="inline-flex items-center gap-2 rounded-oracle-md bg-oracle-gold px-6 py-3 font-display text-body-lg font-semibold text-dark-ink transition-all hover:bg-oracle-gold-light hover:shadow-glow"
             >
-              Start Free
+              Start your free trial
               <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
@@ -85,13 +88,13 @@ export default function LandingPage() {
 
           <div className="mt-12 flex flex-wrap gap-8 text-body-sm text-txt-tertiary">
             <span>
-              <strong className="text-txt-secondary">10+</strong> leagues covered
+              <strong className="text-txt-secondary">2-day</strong> free trial
             </span>
             <span>
-              <strong className="text-txt-secondary">6</strong> market categories
+              <strong className="text-txt-secondary">Every pick</strong> locked before kickoff
             </span>
             <span>
-              <strong className="text-txt-secondary">Poisson</strong> probability engine
+              <strong className="text-txt-secondary">Full record</strong>, losses included
             </span>
           </div>
         </div>
@@ -110,28 +113,28 @@ export default function LandingPage() {
             How It Works
           </p>
           <h2 className="mt-2 font-display text-display-md tracking-tight text-txt-inverse">
-            From data to decisions in three steps
+            From pattern to proof in three steps
           </h2>
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
               {
                 step: '01',
-                icon: BarChart3,
-                title: 'Ingest & Analyse',
-                desc: 'OraQL_ pulls fixtures, stats, lineups, and odds from live data providers — then computes weighted averages across the last 10 matches.',
+                icon: Search,
+                title: 'Find the patterns',
+                desc: 'Every day OraQL_ checks teams across goals, results, corners, cards and more for patterns that happen far more often than usual. Lucky runs are filtered out, not sold to you.',
               },
               {
                 step: '02',
-                icon: Brain,
-                title: 'Compute Probabilities',
-                desc: 'A Poisson-based engine calculates over/under, match result, corners, cards, and BTTS probabilities with recency weighting and injury adjustments.',
+                icon: Gauge,
+                title: 'Give an honest chance',
+                desc: 'Each pick gets a chance you can trust: short or lucky records are pulled back down, nothing is shown above 90%, and you see the price at which it is worth backing.',
               },
               {
                 step: '03',
-                icon: TrendingUp,
-                title: 'Surface Value',
-                desc: 'OraQL_ compares its computed probability against bookmaker implied odds — flagging bets with 10%+ value gaps and explaining why.',
+                icon: CircleCheck,
+                title: 'Prove it',
+                desc: 'Every pick is locked before kickoff and settled after the final whistle. The record shows how often OraQL_ lands against what it expected — win or lose.',
               },
             ].map((item) => (
               <div
@@ -165,40 +168,40 @@ export default function LandingPage() {
             Features
           </p>
           <h2 className="mt-2 font-display text-display-md tracking-tight">
-            Everything you need to bet smarter
+            Everything you need to bet with evidence
           </h2>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                icon: TrendingUp,
+                icon: Flame,
+                title: 'Streaks',
+                desc: 'Team patterns that stand out from the usual rate, with the record behind each one and how the team does against stronger and weaker sides.',
+              },
+              {
+                icon: Boxes,
+                title: 'Clusters',
+                desc: "OraQL_'s strongest picks from unrelated matches, gathered into one view with the honest chance that they all land.",
+              },
+              {
+                icon: Star,
                 title: 'OraQL_ Picks',
-                desc: 'Ranked predictions across every match, sorted by confidence — the top picks surfaced automatically.',
+                desc: 'The likeliest outcomes for each covered match, ranked, each with the reasons behind it in plain words.',
               },
               {
                 icon: Layers,
                 title: 'Bet Builder',
-                desc: 'Combine selections from multiple events. See your combined probability update in real time.',
+                desc: 'Combine selections from different matches and see the chance they all land — with a warning when two of them clash.',
               },
               {
-                icon: Brain,
-                title: 'Transparent Reasoning',
-                desc: 'Every probability comes with a plain-language explanation — stats, trends, and injury context.',
+                icon: Lock,
+                title: 'My clusters',
+                desc: 'Save your own cluster and see whether it would have landed. Test your picks before you spend anything.',
               },
               {
-                icon: Zap,
-                title: 'Value Bet Detection',
-                desc: 'Automatic detection of markets where OraQL_\'s probability diverges 10%+ from bookmaker odds.',
-              },
-              {
-                icon: BarChart3,
-                title: 'Market Analysis',
-                desc: 'Goals, corners, cards, match result, BTTS — six market categories analysed per event.',
-              },
-              {
-                icon: Shield,
-                title: 'Real-Time Updates',
-                desc: 'Probabilities refresh when lineups are confirmed. Live push via WebSocket — no manual refresh.',
+                icon: CircleCheck,
+                title: 'Results & daily record',
+                desc: 'Every call, every day, settled against the real result. Nothing deleted, nothing changed after kickoff.',
               },
             ].map((feature) => (
               <div
@@ -230,17 +233,17 @@ export default function LandingPage() {
         </span>
         <div className="relative z-10 mx-auto max-w-2xl px-6 text-center">
           <h2 className="font-display text-display-md tracking-tight text-txt-inverse">
-            Ready to see the numbers?
+            See the record for yourself.
           </h2>
           <p className="mt-4 text-body-lg text-txt-inverse-2">
-            Create your free account and start exploring OraQL_&apos;s probability engine today.
+            Two days of full access, free. No card needed to start.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link
               href="/auth?mode=register"
               className="inline-flex items-center gap-2 rounded-oracle-md bg-oracle-gold px-6 py-3 font-display text-body-lg font-semibold text-dark-ink transition-all hover:bg-oracle-gold-light hover:shadow-glow"
             >
-              Get Started Free
+              Start your free trial
               <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
@@ -257,7 +260,7 @@ export default function LandingPage() {
             </span>
           </div>
           <p className="text-caption text-txt-inverse-2">
-            OraQL_ does not place bets or handle money. Use responsibly.
+            OraQL_ is a research tool. It does not take bets or promise winnings. 18+ only — bet responsibly.
           </p>
         </div>
       </footer>
