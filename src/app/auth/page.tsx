@@ -51,7 +51,7 @@ function AuthPageContent() {
     setIsLoading(false);
   }
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  // const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'; // used by the Google button
 
   return (
     <div className="flex min-h-screen">
@@ -135,7 +135,7 @@ function AuthPageContent() {
               : 'Get started with OraQL_ in seconds.'}
           </p>
 
-          {/* Google SSO */}
+          {/* Google SSO — hidden for now, along with the "or" divider.
           <a
             href={`${API_URL}/api/v1/auth/google`}
             className="mt-8 flex w-full items-center justify-center gap-3 rounded-oracle-sm border border-warm-stone bg-white px-4 py-3 text-body font-medium transition-all duration-normal hover:bg-warm-cream hover:border-warm-taupe"
@@ -161,15 +161,15 @@ function AuthPageContent() {
             Continue with Google
           </a>
 
-          {/* Divider */}
+          Divider:
           <div className="my-6 flex items-center gap-4">
             <div className="flex-1 border-t border-warm-sand" />
             <span className="text-caption text-txt-tertiary">or</span>
             <div className="flex-1 border-t border-warm-sand" />
-          </div>
+          </div> */}
 
           {/* Email form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             {mode === 'register' && (
               <div className="relative">
                 <User className="absolute left-3.5 top-3.5 h-4 w-4 text-txt-tertiary" />
