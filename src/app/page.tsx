@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Star,
 } from 'lucide-react';
+import TrackRecord from '@/components/landing/TrackRecord';
 
 export default function LandingPage() {
   return (
@@ -222,6 +223,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ─── Track record: last 7 days, public ─── */}
+      <TrackRecord />
 
       {/* ─── CTA (Dark Charcoal Surface) ─── */}
       <section className="relative overflow-hidden bg-dark-charcoal py-20">
