@@ -7,6 +7,7 @@ import { BuilderBar } from '@/components/builder/BuilderBar';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { NavTracker } from '@/components/layout/NavTracker';
 import { PaywallGate } from '@/components/billing/PaywallGate';
+import { VerifyEmailBanner } from '@/components/layout/VerifyEmailBanner';
 
 export default function AppLayout({
   children,
@@ -33,6 +34,7 @@ export default function AppLayout({
           {/* The rail only reserves space from lg up, where it is permanent. */}
           <main className="min-w-0 flex-1 pb-28 lg:ml-64">
             <PaywallGate />
+            <VerifyEmailBanner />
             {children}
           </main>
         </div>

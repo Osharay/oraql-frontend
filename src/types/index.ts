@@ -30,6 +30,7 @@ export interface User {
   lastName?: string;
   avatarUrl?: string;
   role: 'USER' | 'PREMIUM' | 'ADMIN';
+  emailVerified?: boolean;
   preferredSports: Sport[];
   timezone: string;
 }

@@ -219,6 +219,14 @@ function AuthPageContent() {
               </button>
             </div>
 
+            {mode === 'login' && (
+              <div className="-mt-1 text-right">
+                <a href="/auth/forgot" className="text-body-sm font-medium text-oracle-gold-dark hover:underline">
+                  Forgot password?
+                </a>
+              </div>
+            )}
+
             {error && (
               <div className="rounded-oracle-sm bg-danger/10 px-4 py-3 text-body-sm text-danger">
                 {error}
