@@ -45,6 +45,8 @@ function StreaksView() {
   const [data, setData] = useState<CandidatesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Strong picks (OraQL chance 60%+) by default; long shots on request.
+  const [showAll, setShowAll] = useState(false);
   // Back to this page lands where the reader was.
   useScrollMemory(!loading);
 
@@ -64,7 +66,9 @@ function StreaksView() {
     };
   }, [tier]);
 
-  const candidates = data?.candidates ?? [];
+  const allCandidates = data?.candidates ?? [];
+  const candidates = showAll ? allCandidates : allCandidates.filter((c) => chanceOf(c) >= STRONG_CHANCE);
+  const hidden = allCandidates.length - candidates.length;
   const tested = data?.run?.candidatesTested;
 
   return (
@@ -125,7 +129,37 @@ function StreaksView() {
         />
       )}
 
-      {!loading && !error && candidates.length === 0 && (
+      {!loading && !error && allCandidates.length > 0 && (
+        <div className="mb-5 rounded-oracle-sm border border-oracle-gold/40 bg-oracle-gold/10 px-4 py-3 text-body-sm text-txt-primary">
+          <p>
+            <span className="font-semibold">How to read OraQL&apos;s chance:</span> it is how often a pick like this comes
+            in, not a promise — a 70% pick still misses about 3 times in 10. Picks rated 60% and above have landed far
+            more often than lower ones, so those are the ones to focus on, and check the odds pay enough for the risk.
+            Bet only what you can afford to lose.
+          </p>
+          <button
+            onClick={() => setShowAll((v) => !v)}
+            className="mt-2 font-semibold text-oracle-gold-dark hover:underline"
+          >
+            {showAll
+              ? 'Show strong picks only (60%+)'
+              : hidden > 0
+                ? `Show all picks (${hidden} long shot${hidden === 1 ? '' : 's'} hidden)`
+                : 'Show all picks'}
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && allCandidates.length > 0 && candidates.length === 0 && (
+        <EmptyState
+          icon={<SearchX className="h-8 w-8" />}
+          title="No strong picks here today"
+          body="Nothing in this list reaches a 60% OraQL chance. The long shots are still there if you want to look."
+          detail={`${hidden} long shot${hidden === 1 ? '' : 's'} hidden`}
+        />
+      )}
+
+      {!loading && !error && allCandidates.length === 0 && (
         <EmptyState
           icon={<SearchX className="h-8 w-8" />}
           title={
@@ -153,7 +187,7 @@ function StreaksView() {
       {!loading && candidates.length > 0 && (
         <>
           <p className="mb-4 text-body-sm text-txt-tertiary">
-            {candidates.length} of {tested?.toLocaleString() ?? '—'} slices tested
+            {candidates.length} {showAll ? '' : 'strong '}of {tested?.toLocaleString() ?? '—'} slices tested
           </p>
           <div className="space-y-8">
             {groupByMatch(candidates).map((g) => (
@@ -168,6 +202,14 @@ function StreaksView() {
       </p>
     </div>
   );
+}
+
+/** OraQL's chance at or above this is a strong pick; below it, a long shot. */
+const STRONG_CHANCE = 0.6;
+
+/** The chance a card leads with: the honest chance, else recent form, else the record. */
+function chanceOf(c: StreakCandidate): number {
+  return c.context?.chance ?? c.context?.formRate ?? c.hitRate;
 }
 
 /**

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import FeedbackButton from '@/components/feedback/FeedbackButton';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -39,6 +40,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-warm-white font-body text-txt-primary antialiased">
         {children}
+        <FeedbackButton />
       </body>
     </html>
   );

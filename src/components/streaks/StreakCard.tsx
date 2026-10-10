@@ -258,7 +258,17 @@ export function StreakCard({
           {candidate.context?.chance != null ? (
             <>
               {/* The honest chance leads; the raw record is the evidence under it. */}
-              <p className="mt-2 text-body font-semibold text-txt-primary">OraQL chance {pct(candidate.context.chance)}</p>
+              <p className="mt-2 text-body font-semibold text-txt-primary">
+                OraQL chance {pct(candidate.context.chance)}
+                {candidate.context.chance < 0.6 && (
+                  <span
+                    title="Below a 60% OraQL chance. Picks like this have landed far less often."
+                    className="ml-2 rounded-oracle-full bg-warm-sand px-2 py-0.5 align-middle text-caption font-medium text-txt-tertiary"
+                  >
+                    Long shot
+                  </span>
+                )}
+              </p>
               <p className="text-body-sm text-txt-secondary">Happens in {pct(candidate.hitRate)} of their matches</p>
             </>
           ) : (
