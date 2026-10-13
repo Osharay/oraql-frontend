@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Star, Clock } from 'lucide-react';
-import { cn, formatKickoff } from '@/lib/utils';
+import { Star, Clock, ChevronRight } from 'lucide-react';
+import { cn, formatKickoff, leagueWithCountry } from '@/lib/utils';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { marketShortLabel, marketSubject } from '@/lib/market-copy';
 import type { Event } from '@/types';
@@ -34,7 +34,7 @@ export function EventCard({ event, className }: EventCardProps) {
       {/* League header */}
       <div className="mb-3 flex items-center justify-between">
         <span className="text-caption font-medium text-txt-tertiary">
-          {event.league.name}
+          {leagueWithCountry(event.league)}
         </span>
         <div className="flex items-center gap-2">
           {isLive && (
@@ -111,6 +111,12 @@ export function EventCard({ event, className }: EventCardProps) {
             </span>
           </div>
         )}
+      </div>
+
+      {/* Says the card opens: testers did not realise it could be tapped. */}
+      <div className="mt-3 flex items-center justify-end gap-1 border-t border-warm-sand/70 pt-2 text-caption font-semibold text-oracle-gold-dark">
+        Match details and form
+        <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
       </div>
     </Link>
   );

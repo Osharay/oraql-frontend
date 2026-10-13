@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Layers, X, Copy, Trash2, ChevronUp } from 'lucide-react';
+import Link from 'next/link';
+import { Layers, X, Copy, Trash2, ChevronUp, Lock } from 'lucide-react';
 import { cn, combinedChanceNote, formatCombinedChance } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
@@ -118,6 +119,19 @@ export function BuilderBar() {
               <Trash2 className="h-4 w-4" />
               Clear
             </Button>
+            {/* Saving a cluster lives on the Builder page; testers looked for it here. */}
+            <Link
+              href="/builder?save=1"
+              title={count < 2 ? 'Add at least 2 selections to save them as a cluster' : 'Lock these selections in and see how they land'}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-oracle-sm border border-oracle-gold/50 px-3 py-1.5 text-body-sm font-semibold text-oracle-gold hover:bg-oracle-gold/10',
+                count < 2 && 'pointer-events-none opacity-40',
+              )}
+            >
+              <Lock className="h-4 w-4" />
+              <span className="hidden sm:inline">Save as cluster</span>
+              <span className="sm:hidden">Save</span>
+            </Link>
             <Button variant="gold" size="sm" onClick={handleExport}>
               <Copy className="h-4 w-4" />
               {copied ? 'Copied!' : 'Export'}

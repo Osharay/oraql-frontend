@@ -41,6 +41,10 @@ export default function BuilderPage() {
   const [saving, setSaving] = useState<'closed' | 'open' | 'busy' | 'saved'>('closed');
   const [clusterName, setClusterName] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Arriving from the Builder bar's "Save as cluster" opens the save panel.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('save') === '1') setSaving('open');
+  }, []);
   const started = selections.filter((s) => new Date(s.market.event.kickoffAt).getTime() <= Date.now());
 
   const handleSave = async () => {

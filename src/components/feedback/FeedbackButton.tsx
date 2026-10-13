@@ -143,10 +143,12 @@ export default function FeedbackButton() {
         <button
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
+          aria-label="Send feedback"
           className="inline-flex items-center gap-2 rounded-oracle-full bg-dark-ink px-4 py-2.5 text-body-sm font-semibold text-white shadow-card hover:bg-dark-charcoal"
         >
           <MessageSquare className="h-4 w-4 text-oracle-gold" />
-          Feedback
+          {/* Icon only on phones, so it covers less of the page. */}
+          <span className="hidden sm:inline">Feedback</span>
         </button>
       </div>
     </div>

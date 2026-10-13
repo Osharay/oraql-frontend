@@ -7,6 +7,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { EventCard } from '@/components/events/EventCard';
 import { PickCard } from '@/components/picks/PickCard';
 import { api } from '@/lib/api';
+import { cn, leagueWithCountry } from '@/lib/utils';
 import type { Event, Pick, Sport, PaginatedResponse, SportSummary } from '@/types';
 
 export default function DashboardPage() {
@@ -15,6 +16,8 @@ export default function DashboardPage() {
   const [topPicks, setTopPicks] = useState<Pick[]>([]);
   const [sportCounts, setSportCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
+  // OraQL's picks first by default; kick-off time and league on request.
+  const [sortBy, setSortBy] = useState<'picks' | 'time' | 'league'>('picks');
   // Back to this page lands where the reader was.
   useScrollMemory(!isLoading);
 
@@ -42,16 +45,37 @@ export default function DashboardPage() {
     setIsLoading(false);
   }
 
-  // Group events by league
-  const groupedEvents = events.reduce(
-    (acc, event) => {
-      const key = event.league.name;
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(event);
-      return acc;
-    },
-    {} as Record<string, Event[]>,
-  );
+  const kick = (e: Event) => new Date(e.kickoffAt).getTime();
+  const done = (e: Event) => e.status === 'FINISHED';
+  const topChance = (e: Event) => (done(e) ? -1 : e.picks?.[0]?.probability ?? -1);
+  const withPick = events.filter((e) => topChance(e) >= 0).length;
+
+  // The list as sections: one untitled section for the flat sorts, one per
+  // league (country first) when sorted by league.
+  const sections: Array<[string, Event[]]> =
+    sortBy === 'league'
+      ? Object.entries(
+          events.reduce(
+            (acc, event) => {
+              const key = leagueWithCountry(event.league);
+              (acc[key] ??= []).push(event);
+              return acc;
+            },
+            {} as Record<string, Event[]>,
+          ),
+        )
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([k, list]) => [k, [...list].sort((a, b) => kick(a) - kick(b))])
+      : [
+          [
+            '',
+            [...events].sort((a, b) =>
+              sortBy === 'picks'
+                ? topChance(b) - topChance(a) || Number(done(a)) - Number(done(b)) || kick(a) - kick(b)
+                : Number(done(a)) - Number(done(b)) || kick(a) - kick(b),
+            ),
+          ],
+        ];
 
   return (
     <div className="bg-warm-white min-h-screen">
@@ -81,7 +105,7 @@ export default function DashboardPage() {
                   Top Picks Today
                 </h2>
                 <p className="text-body-sm text-txt-inverse-2 max-w-lg">
-                  OraQL_&apos;s highest-confidence predictions across all matches
+                  The likeliest bettable pick from each of today&apos;s best matches — one per match, no near-certain lines bookmakers won&apos;t price
                 </p>
               </div>
             </div>
@@ -126,7 +150,33 @@ export default function DashboardPage() {
               </div>
               <span className="inline-flex items-center px-4 py-2 rounded-oracle-md bg-warm-cream text-txt-secondary font-body text-body-sm font-semibold">
                 {events.length} {events.length === 1 ? 'match' : 'matches'}
+                {withPick > 0 && ` · ${withPick} with an OraQL pick`}
               </span>
+            </div>
+
+            <div className="mb-6 flex flex-wrap items-center gap-2" role="group" aria-label="Sort fixtures">
+              <span className="text-caption font-semibold uppercase tracking-wide text-txt-tertiary">Sort by</span>
+              {(
+                [
+                  ['picks', 'OraQL picks'],
+                  ['time', 'Kick-off time'],
+                  ['league', 'League'],
+                ] as const
+              ).map(([k, label]) => (
+                <button
+                  key={k}
+                  onClick={() => setSortBy(k)}
+                  aria-pressed={sortBy === k}
+                  className={cn(
+                    'rounded-oracle-full border px-4 py-1.5 text-body-sm font-medium transition-colors',
+                    sortBy === k
+                      ? 'border-oracle-gold bg-oracle-gold/10 text-txt-primary'
+                      : 'border-warm-stone bg-white text-txt-tertiary hover:text-txt-secondary',
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
             {/* Events Grid by League */}
@@ -146,14 +196,16 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </div>
-            ) : Object.keys(groupedEvents).length > 0 ? (
+            ) : events.length > 0 ? (
               <div className="space-y-10">
-                {Object.entries(groupedEvents).map(([league, leagueEvents]) => (
-                  <div key={league}>
+                {sections.map(([league, leagueEvents]) => (
+                  <div key={league || 'all'}>
                     {/* League Name Header */}
-                    <h3 className="text-body-xs font-mono uppercase tracking-widest text-txt-tertiary mb-4 font-semibold">
-                      {league}
-                    </h3>
+                    {league && (
+                      <h3 className="text-body-xs font-mono uppercase tracking-widest text-txt-tertiary mb-4 font-semibold">
+                        {league}
+                      </h3>
+                    )}
 
                     {/* Events for This League */}
                     <div className="space-y-3">

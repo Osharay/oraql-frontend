@@ -151,3 +151,14 @@ export function minimumOddsCopy(chance: number): string | null {
   const odds = minimumOdds(chance);
   return odds == null ? null : `Worth backing at ${odds.toFixed(2)} or higher`;
 }
+
+/**
+ * A league with its country, so an unfamiliar competition can be found at a
+ * bookmaker: "Portugal · Segunda Liga". The country is left out when the name
+ * already says it ("Liga Profesional Argentina") or there is none.
+ */
+export function leagueWithCountry(league: { name: string; country?: string | null }) {
+  const c = league.country?.trim();
+  if (!c || c.toLowerCase() === 'world' || league.name.toLowerCase().includes(c.toLowerCase())) return league.name;
+  return `${c} · ${league.name}`;
+}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Star, ChevronDown, ChevronUp, Plus, Sparkles } from 'lucide-react';
-import { cn, minimumOddsCopy } from '@/lib/utils';
+import { cn, minimumOddsCopy, leagueWithCountry } from '@/lib/utils';
 import { ProbabilityBadge } from '@/components/ui/ProbabilityBadge';
 import { Button } from '@/components/ui/Button';
 import {
@@ -147,7 +147,7 @@ export function PickCard({
           {pick.event.homeTeam.shortName || pick.event.homeTeam.name} vs{' '}
           {pick.event.awayTeam.shortName || pick.event.awayTeam.name}
           <span className={cn('ml-2', isDark ? 'text-txt-inverse-2' : 'text-txt-tertiary')}>
-            {pick.event.league.name}
+            {leagueWithCountry(pick.event.league)}
           </span>
           {isInternationalCompetition(pick.event.league.name, pick.event.league.country) && (
             <span className="ml-2 align-middle">
